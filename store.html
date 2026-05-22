@@ -5,25 +5,232 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Geek Store — Geekonverse</title>
 
-  <!-- Estilo externo (mesmo padrão do restante do site) -->
-  <link rel="stylesheet" href="/css/style.css"/>
+  <!-- Fontes do style.css -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poor+Story&family=Single+Day&family=Montserrat:wght@400;600&display=swap"/>
 
-  <!-- React + Babel via CDN (zero instalação) -->
+  <!-- React + Babel via CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 
-  <!-- Módulos do jogo (ordem importa!) -->
-  <script src="/js/constants.js"></script>
-  <script src="/js/particles.js"></script>
-  <script src="/js/renderer.js"></script>
-  <script src="/js/game.js"></script>
+  <style>
+    /* ── Variáveis do style.css ──────────────────────────────── */
+    :root {
+      --cor-um:        #000000;
+      --cor-dois:      #F1D4D4;
+      --cor-tres:      #35458a;
+      --cor-quatro:    #6A097D;
+      --fonte-padrao:  'Poor Story', system-ui;
+      --fonte-secundaria: 'Montserrat', sans-serif;
+      --sombra-destaque: 2px 2px var(--cor-tres);
+    }
+
+    /* ── Reset ───────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--cor-um);
+      color: var(--cor-dois);
+    }
+
+    /* ── Fundo neon grid (canvas fixo, como no original) ─────── */
+    #neonGrid {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    /* ── Navbar  ─────────────────────────────────────────────── */
+    #site-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2% 15%;
+      gap: 40px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--cor-dois);
+    }
+    .brand-logo {
+      font-size: 2.2rem;
+      filter: drop-shadow(0 0 8px var(--cor-tres));
+    }
+    .brand-name {
+      font-family: var(--fonte-padrao);
+      font-size: 1.6rem;
+      text-shadow: var(--sombra-destaque);
+      letter-spacing: 2px;
+    }
+    .brand-sub {
+      font-family: var(--fonte-secundaria);
+      font-size: 0.65rem;
+      color: var(--cor-tres);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    nav {
+      display: flex;
+      gap: 60px;
+    }
+    nav a {
+      font-family: var(--fonte-padrao);
+      font-size: 1.4rem;
+      color: var(--cor-tres);
+      text-decoration: none;
+      text-shadow: 1px 1px var(--cor-dois);
+      transition: color 0.2s;
+    }
+    nav a:hover,
+    nav a.active {
+      color: var(--cor-dois);
+      text-shadow: var(--sombra-destaque);
+    }
+
+    /* ── Área do jogo ────────────────────────────────────────── */
+    #game-container {
+      flex: 1;
+      padding: 2% 15%;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    /* O React monta aqui — recebe a glass card do style.css */
+    #root {
+      width: 100%;
+      min-height: 420px;
+      background: rgba(230, 59, 242, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 0 28px rgba(142, 207, 255, 0.25);
+      padding: 24px;
+      transition: box-shadow 0.3s ease;
+    }
+    #root:hover {
+      box-shadow: 0 0 40px rgba(255, 110, 199, 0.45);
+    }
+
+    /* Placeholder enquanto o JS do jogo não está presente */
+    .store-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      height: 100%;
+      min-height: 380px;
+    }
+    .store-placeholder h2 {
+      font-family: var(--fonte-padrao);
+      font-size: 2rem;
+      text-shadow: var(--sombra-destaque);
+    }
+    .store-placeholder p {
+      font-family: var(--fonte-secundaria);
+      font-size: 0.95rem;
+      color: var(--cor-tres);
+      text-align: center;
+      max-width: 420px;
+    }
+    .store-placeholder span {
+      color: var(--cor-dois);
+      padding: 1px;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    #site-footer {
+      text-align: center;
+      padding: 2%;
+      background-color: var(--cor-tres);
+      color: var(--cor-dois);
+      font-family: var(--fonte-padrao);
+      font-size: 1.4rem;
+    }
+
+    /* ── Responsivo ──────────────────────────────────────────── */
+    @media (max-width: 1200px) {
+      #site-nav   { padding: 4% 8%; }
+      #game-container { padding: 4% 8%; }
+    }
+    @media (max-width: 768px) {
+      #site-nav {
+        flex-direction: column;
+        padding: 5% 8%;
+        gap: 16px;
+      }
+      nav { gap: 24px; }
+      #game-container { padding: 4% 5%; }
+    }
+    @media (max-width: 480px) {
+      nav a { font-size: 1.1rem; }
+      .brand-name { font-size: 1.2rem; }
+      #game-container { padding: 3% 4%; }
+    }
+  </style>
 </head>
 <body>
 
+<!-- ── Fundo animado neon grid ──────────────────────────── -->
+<canvas id="neonGrid"></canvas>
+<script>
+  /* Grid neon simples — substitui pelo teu canvas completo se quiseres */
+  (function () {
+    const canvas = document.getElementById('neonGrid');
+    const ctx    = canvas.getContext('2d');
+    let W, H;
+
+    function resize() {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    const COLS = 20, ROWS = 20;
+    let offset = 0;
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(53,69,138,0.35)';
+      ctx.lineWidth   = 0.8;
+
+      const cw = W / COLS, rh = H / ROWS;
+      for (let c = 0; c <= COLS; c++) {
+        const x = c * cw;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
+      }
+      for (let r = 0; r <= ROWS; r++) {
+        const y = (r * rh + offset) % H;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(W, y);
+        ctx.stroke();
+      }
+      offset = (offset + 0.4) % rh;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  })();
+</script>
+
 <div id="app-root">
 
-  <!-- ── Navbar Geekonverse ── -->
+  <!-- ── Navbar Geekonverse ────────────────────────────────── -->
   <header id="site-nav">
     <a href="index.html" class="brand">
       <div class="brand-logo">👾</div>
@@ -39,25 +246,54 @@
     </nav>
   </header>
 
-  <!-- ── Jogo (React monta aqui) ── -->
+  <!-- ── Jogo / React monta aqui ──────────────────────────── -->
   <div id="game-container">
     <div id="root"></div>
   </div>
 
-  <!-- ── Footer Geekonverse ── -->
+  <!-- ── Footer ────────────────────────────────────────────── -->
   <footer id="site-footer">
     @Geekonverse company 2022® &nbsp;·&nbsp; Pixel RPG Store
   </footer>
 
 </div>
 
-<!-- ui.js usa JSX, precisa do Babel -->
-<script type="text/babel" src="js/ui.js"></script>
+<!-- ── Scripts do jogo (mantidos como no original) ──────── -->
+<!-- <script src="/js/constants.js"></script>  -->
+<!-- <script src="/js/particles.js"></script>  -->
+<!-- <script src="/js/renderer.js"></script>   -->
+<!-- <script src="/js/game.js"></script>        -->
+
+<!-- ui.js usa JSX — descomenta quando os ficheiros locais estiverem presentes -->
+<!-- <script type="text/babel" src="js/ui.js"></script> -->
 
 <script type="text/babel">
-  // Ponto de entrada: monta o componente React no div#root
-  const root = ReactDOM.createRoot(document.getElementById("root"));
-  root.render(React.createElement(PixelStore));
+  /* Ponto de entrada React.
+     Enquanto o PixelStore não está disponível, mostra placeholder com o estilo do site. */
+  function PixelStorePlaceholder() {
+    return (
+      <div className="store-placeholder">
+        <h2>⚔️ Pixel RPG Store</h2>
+        <p>
+          A loja está a carregar… Certifica-te que os ficheiros
+          <span> constants.js</span>,<span> particles.js</span>,
+          <span> renderer.js</span>,<span> game.js</span> e
+          <span> ui.js</span> estão na pasta <span>/js/</span>.
+        </p>
+      </div>
+    );
+  }
+
+  const rootEl = document.getElementById('root');
+  const appRoot = ReactDOM.createRoot(rootEl);
+
+  /* Se o componente PixelStore foi carregado pelos scripts locais, usa-o;
+     caso contrário exibe o placeholder. */
+  appRoot.render(
+    typeof PixelStore !== 'undefined'
+      ? React.createElement(PixelStore)
+      : React.createElement(PixelStorePlaceholder)
+  );
 </script>
 
 </body>
