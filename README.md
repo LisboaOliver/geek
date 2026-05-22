@@ -17,6 +17,7 @@ Este website oferece uma plataforma interativa com efeitos dinâmicos de neon, d
 │    └── style.css
 ├── /js
 │    └── script.js
+      └── game.js
 └── README.md
 ```
 
