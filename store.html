@@ -23,6 +23,9 @@
 
     </main>
     <canvas id="gameCanvas"></canvas>
+    <script src="/js/constants.js"></script>
+    <script src="/js/particles.js"></script>
+    <script src="/js/renderer.js"></script>
     <script src="/js/game.js"></script>
     <canvas id="neonGrid"></canvas>
     <script src="/js/script.js"></script>
@@ -31,5 +34,12 @@
     <footer class="rodape">
       <p>@Geekonverse company 2022®</p>
     </footer>
+<script type="text/babel" src="js/ui.js"></script>
+
+<script type="text/babel">
+  // Ponto de entrada: monta o componente React no div#root
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(React.createElement(PixelStore));
+</script>
 </body>
 </html>
