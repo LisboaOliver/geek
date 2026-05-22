@@ -1,40 +1,57 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geek Store page</title>
-    <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Geek Store — Geekonverse</title>
+
+  <!-- Estilo externo (mesmo padrão do restante do site) -->
+  <link rel="stylesheet" href="style.css"/>
+
+  <!-- React + Babel via CDN (zero instalação) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+
+  <!-- Módulos do jogo (ordem importa!) -->
+  <script src="/js/constants.js"></script>
+  <script src="/js/particles.js"></script>
+  <script src="/js/renderer.js"></script>
+  <script src="/js/game.js"></script>
 </head>
 <body>
 
-    <header class="cabecalho">
-      <nav class="cabecalho_menu">
-        <a class="link_pagina glass" href="/index.html">Home</a>
-        <a class="link_pagina glass" href="/about.html">About us</a>
-        <a class="link_pagina glass" href="/store.html">Store</a>
-      </nav> 
-    </header>
-    <canvas id="gameCanvas"></canvas>
-    <script src="/js/constants.js"></script>
-    <script src="/js/particles.js"></script>
-    <script src="/js/renderer.js"></script>
-    <script src="/js/game.js"></script>
-    <main class="conteudo_principal">
-              <div id="game-container">
-    <div id="root"></div>
+<div id="app-root">
+
+  <!-- ── Navbar Geekonverse ── -->
+  <header id="site-nav">
+    <a href="index.html" class="brand">
+      <div class="brand-logo">👾</div>
+      <div>
+        <div class="brand-name">GEEKONVERSE</div>
+        <div class="brand-sub">INVADINDO UNIVERSOS</div>
       </div>
-    <canvas id="neonGrid"></canvas>
-    <script src="/js/script.js"></script>
-        
-    </main>
+    </a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About us</a>
+      <a href="store.html" class="active">Store</a>
+    </nav>
+  </header>
 
-    
+  <!-- ── Jogo (React monta aqui) ── -->
+  <div id="game-container">
+    <div id="root"></div>
+  </div>
 
-    <footer class="rodape">
-      <p>@Geekonverse company 2022®</p>
-    </footer>
+  <!-- ── Footer Geekonverse ── -->
+  <footer id="site-footer">
+    @Geekonverse company 2022® &nbsp;·&nbsp; Pixel RPG Store
+  </footer>
+
+</div>
+
+<!-- ui.js usa JSX, precisa do Babel -->
 <script type="text/babel" src="js/ui.js"></script>
 
 <script type="text/babel">
@@ -42,5 +59,6 @@
   const root = ReactDOM.createRoot(document.getElementById("root"));
   root.render(React.createElement(PixelStore));
 </script>
+
 </body>
 </html>
