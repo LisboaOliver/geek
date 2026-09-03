@@ -79,3 +79,52 @@ function animate() {
 }
 
 animate();
+
+const contactForm = document.getElementById("contactForm");
+const successMessage = document.getElementById("successMessage");
+const submitButton = document.getElementById("submitButton");
+
+if (contactForm) {
+
+    contactForm.addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        submitButton.disabled = true;
+        submitButton.textContent = "A transmitir...";
+
+        const formData = new FormData(contactForm);
+
+        try {
+
+            const response = await fetch("https://api.web3forms.com/submit", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+
+                contactForm.style.display = "none";
+                successMessage.style.display = "block";
+
+            } else {
+
+                alert("Não foi possível transmitir a mensagem. Tenta novamente.");
+
+                submitButton.disabled = false;
+                submitButton.textContent = "Enviar mensagem";
+            }
+
+        } catch (error) {
+
+            alert("Ocorreu um erro de comunicação com os nossos satélites.");
+
+            submitButton.disabled = false;
+            submitButton.textContent = "Enviar mensagem";
+        }
+
+    });
+
+}
