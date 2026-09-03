@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto | Geekonverse</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <header class="cabecalho">
+        <nav class="cabecalho_menu">
+            <a class="link_pagina glass" href="/index.html">Home</a>
+            <a class="link_pagina glass" href="/about.html">About us</a>
+            <a class="link_pagina glass" href="/store.html">Store</a>
+        </nav> 
+    </header>
+
+    <main class="conteudo_principal">
+
+        <section class="contact-section">
+
+            <h1 class="titulo_paragrafo glass">Contacta-nos</h1>
+
+            <p class="paragrafo glass">
+                Tens uma sugestão, dúvida ou proposta de parceria?
+                Entra em contacto connosco.
+            </p>
+            
+
+            <form class="contact-form" id="contactForm">
+
+                <!-- Chave fornecida pelo Web3Forms -->
+                <input
+                    type="hidden"
+                    name="access_key"
+                    value="A_TUA_ACCESS_KEY"
+                >
+
+                <!-- Assunto que aparecerá no teu email -->
+                <input
+                    type="hidden"
+                    name="subject"
+                    value="Nova mensagem através do Geekonverse"
+                >
+
+                <div class="atalhos_links">
+                    <label for="name">Nome</label>
+                    <input class="acesso_a_rede glass"
+                        type="text"
+                        id="name"
+                        name="name"
+                        required
+                    >
+                </div>
+
+                <div class="atalhos_links">
+                    <label for="email">Email</label>
+                    <input  class="acesso_a_rede glass"
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                    >
+                </div>
+
+                <div class="atalhos_links">
+                    <label for="subject">Assunto</label>
+                    <input  class="acesso_a_rede glass"
+                        type="text"
+                        id="subject"
+                        name="subject"
+                        required
+                    >
+                </div>
+
+                <div class="atalhos_links">
+                    <label for="message">Mensagem</label>
+                    <textarea class="acesso_a_rede glass"
+                        id="message"
+                        name="message"
+                        rows="6"
+                        required
+                    ></textarea>
+                    <button class="acesso_a_rede glass" type="submit" id="submitButton">
+                    Enviar mensagem
+                </button>
+
+                </div>
+
+                
+            </form>
+
+            <!-- Mensagem exibida depois do envio -->
+            <div
+                id="successMessage"
+                class="glass"
+                style="display: none;"
+            >
+                <h2>Mensagem recebida.</h2>
+
+                <p>
+                    Recebemos a tua mensagem.
+                    Aguarda o retorno dos nossos satélites.
+                </p>
+            </div>
+
+        </section>
+        
+
+        <canvas id="neonGrid"></canvas>
+
+        <script src="js/script.js"></script>
+        <img class="bloco2" src="assests/giphy.gif" alt="Logo da Geekonverse. monstro rosa com chifres e usando uma gravata.">
+
+    </main>
+
+    <footer class="rodape">
+        <p>@Geekonverse company 2022®</p>
+        <a href="/contact.html">Contacta-nos</a>
+    </footer>
+
+</body>
+</html>
