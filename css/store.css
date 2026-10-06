@@ -366,3 +366,17 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   .gs-toast, .gs-overlay { animation: none; }
 }
+
+/* ── Pagamento (bolsa) ─────────────────────────────────────────────────────── */
+.gs-field { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+.gs-field > span { color: var(--gs-dim); }
+.gs-tabs.gs-tabs-sm { margin-bottom: 0; }
+.gs-points-toggle { display: flex; gap: 10px; align-items: flex-start; margin-top: 14px; padding: 10px 12px; border: 1px dashed var(--gs-gold); border-radius: 8px; cursor: pointer; }
+.gs-points-toggle input { margin-top: 4px; accent-color: var(--gs-gold); width: 18px; height: 18px; }
+.gs-points-toggle small { color: var(--gs-dim); }
+.gs-points-note { margin: 14px 0 0; font-size: 15px; }
+.gs-linkbtn { background: none; border: 0; padding: 0; color: var(--gs-gold); text-decoration: underline; cursor: pointer; font: inherit; }
+.gs-summary > div.is-discount { color: var(--gs-gold); }
+.gs-panel-body .gs-error { margin-top: 12px; padding: 10px 12px; border: 1px solid #ff7b7b55; border-radius: 8px; background: #2a0e10; }
+.gs-pay { margin-top: 14px; font-size: 18px; }
+.gs-checkout-note a { color: var(--gs-gold); }

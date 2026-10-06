@@ -90,13 +90,27 @@ const Account = (() => {
     EVENTS.splice(0, EVENTS.length, ...evs);
   }
 
+  /** Preço e stock oficiais vêm da tabela "products" (o servidor só confia nesses). */
+  async function loadProducts() {
+    const { data, error } = await sb.from("products").select("id,price_cents,old_cents,stock");
+    if (error || !data) return;
+    const byId = new Map(data.map(r => [r.id, r]));
+    PRODUCTS.forEach(p => {
+      const r = byId.get(p.id);
+      if (!r) return;
+      p.price = r.price_cents / 100;
+      p.old = r.old_cents ? r.old_cents / 100 : null;
+      p.stock = r.stock;
+    });
+  }
+
   async function init() {
     if (!window.supabase || !window.supabase.createClient) { state.ready = true; emit(); return; }
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     });
     state.enabled = true;
-    try { await loadEvents(); } catch (_) { /* fica com os eventos do events.js */ }
+    try { await Promise.all([loadEvents(), loadProducts()]); } catch (_) { /* fica com os dados do constants.js / events.js */ }
     const { data } = await sb.auth.getSession();
     state.user = data.session ? data.session.user : null;
     try { await loadProfile(); } catch (_) { /* tenta mais tarde */ }
@@ -119,6 +133,22 @@ const Account = (() => {
       if (error) throw new Error(friendly(error));
     },
     async signOut() { if (sb) await sb.auth.signOut(); },
+    /** Atualiza os pontos (por exemplo depois de voltar do pagamento). */
+    async refresh() { if (sb && state.user) { try { await loadProfile(); } catch (_) { /* ignora */ } emit(); } },
+    /** Cria o pagamento na Stripe (função "checkout" no Supabase) e devolve o URL. */
+    async checkout({ items, country, points }) {
+      if (!sb) throw new Error("O pagamento online não está disponível de momento.");
+      const { data, error } = await sb.functions.invoke("checkout", {
+        body: { items, country, points: state.user ? points : 0 },
+      });
+      if (error) {
+        let msg = "";
+        try { msg = (await error.context.json()).error; } catch (_) { /* sem detalhe */ }
+        throw new Error(msg || friendly(error));
+      }
+      if (!data || !data.url) throw new Error((data && data.error) || "Não foi possível iniciar o pagamento.");
+      return data.url;
+    },
     async claim(ev) {
       if (!sb || !state.user) throw new Error("Entra na tua conta para reclamar pontos.");
       const pr = QuestTracker.progress(ev);

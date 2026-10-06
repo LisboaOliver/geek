@@ -135,10 +135,40 @@ function MarketPanel({ onClose, onAdd, cartCount, onOpenCart }) {
   );
 }
 
-// ── Carrinho ──────────────────────────────────────────────────────────────────
-function CartPanel({ cart, onClose, onChange, onClear }) {
-  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_FROM ? 0 : SHIPPING_COST;
+// ── Carrinho e pagamento ──────────────────────────────────────────────────────
+// Os valores aqui são só para mostrar: quem decide o preço final é o servidor
+// (função "checkout"), com os preços e os pontos da base de dados.
+const COUNTRY_KEY = "geekonverse-pais";
+const COUNTRIES = [["PT", "Portugal"], ["ES", "Espanha"]];
+
+function CartPanel({ cart, acc, onClose, onChange, onClear, onLogin }) {
+  const [country, setCountry] = useState(() => safeGet(COUNTRY_KEY) === "ES" ? "ES" : "PT");
+  const [usePoints, setUsePoints] = useState(true);
+  const [paying, setPaying] = useState(false);
+  const [err, setErr] = useState(null);
+  useEffect(() => { safeSet(COUNTRY_KEY, country); }, [country]);
+
+  const cents = v => Math.round(v * 100);
+  const subtotalC = cart.reduce((s, i) => s + cents(i.price) * i.qty, 0);
+  const maxPts = Math.floor((subtotalC * POINTS_MAX_SHARE) / POINTS_CENT_VALUE);
+  const usable = acc.user ? Math.min(acc.points, maxPts) : 0;
+  const pts = usePoints ? usable : 0;
+  const discountC = pts * POINTS_CENT_VALUE;
+  const freeC = FREE_SHIPPING_FROM * 100;
+  const shippingC = subtotalC === 0 || subtotalC - discountC >= freeC ? 0 : cents(SHIPPING[country]);
+  const totalC = subtotalC - discountC + shippingC;
+  const eur = c => fmtEUR(c / 100);
+
+  const pay = async () => {
+    setErr(null); setPaying(true);
+    try {
+      const url = await Account.checkout({ items: cart.map(i => ({ id: i.id, qty: i.qty })), country, points: pts });
+      window.location.href = url;
+    } catch (e) {
+      setErr(e.message); setPaying(false);
+    }
+  };
+
   return (
     <Panel title="🎒 Bolsa do Aventureiro" accent={N.magenta} onClose={onClose}>
       {cart.length === 0 ? (
@@ -151,35 +181,88 @@ function CartPanel({ cart, onClose, onChange, onClear }) {
         <>
           <ul className="gs-cart">
             {cart.map(i => (
-              <li key={i.name}>
+              <li key={i.id}>
                 <span className="gs-cart-emoji" aria-hidden="true">{i.emoji}</span>
                 <span className="gs-cart-name">{i.name}<small>{fmtEUR(i.price)} cada</small></span>
                 <div className="gs-qty">
-                  <button onClick={() => onChange(i.name, i.qty - 1)} aria-label="Menos">−</button>
+                  <button onClick={() => onChange(i.id, i.qty - 1)} aria-label="Menos">−</button>
                   <span>{i.qty}</span>
-                  <button onClick={() => onChange(i.name, Math.min(i.stock, i.qty + 1))} aria-label="Mais">+</button>
+                  <button onClick={() => onChange(i.id, Math.min(i.stock, i.qty + 1))} aria-label="Mais">+</button>
                 </div>
                 <strong>{fmtEUR(i.price * i.qty)}</strong>
               </li>
             ))}
           </ul>
+
+          <div className="gs-field">
+            <span>Enviar para</span>
+            <div className="gs-tabs gs-tabs-sm" role="radiogroup" aria-label="País de envio">
+              {COUNTRIES.map(([id, label]) => (
+                <button key={id} role="radio" aria-checked={country === id} className={country === id ? "is-on" : ""}
+                  onClick={() => setCountry(id)}>{label}</button>
+              ))}
+            </div>
+          </div>
+
+          {acc.enabled && (acc.user ? (
+            usable > 0 ? (
+              <label className="gs-points-toggle">
+                <input type="checkbox" checked={usePoints} onChange={e => setUsePoints(e.target.checked)}/>
+                <span>Usar <b>{usable}</b> pontos de promoção (−{eur(usable * POINTS_CENT_VALUE)})
+                  {usable < acc.points && <small> · máximo 20% da compra; ficas com {acc.points - usable}</small>}</span>
+              </label>
+            ) : (
+              <p className="gs-muted gs-points-note">⭐ {acc.points} pontos · completa quests de eventos para ganhar descontos (100 pontos = 5 €).</p>
+            )
+          ) : (
+            <p className="gs-muted gs-points-note">
+              Tens pontos de promoção? <button className="gs-linkbtn" onClick={onLogin}>Entra na tua conta</button> para os usar.
+            </p>
+          ))}
+
           <div className="gs-summary">
-            <div><span>Subtotal</span><span>{fmtEUR(subtotal)}</span></div>
-            <div><span>Envio (PT/ES)</span><span>{shipping ? fmtEUR(shipping) : "Grátis"}</span></div>
-            {shipping > 0 && (
+            <div><span>Subtotal</span><span>{eur(subtotalC)}</span></div>
+            {discountC > 0 && <div className="is-discount"><span>Pontos ({pts})</span><span>−{eur(discountC)}</span></div>}
+            <div><span>Envio ({country === "PT" ? "Portugal" : "Espanha"})</span><span>{shippingC ? eur(shippingC) : "Grátis"}</span></div>
+            {shippingC > 0 && (
               <div className="gs-progress-row">
-                <span className="gs-muted">Faltam {fmtEUR(FREE_SHIPPING_FROM - subtotal)} para envio grátis</span>
-                <div className="gs-progress"><div style={{ width: `${(subtotal / FREE_SHIPPING_FROM) * 100}%` }}/></div>
+                <span className="gs-muted">Faltam {eur(freeC - (subtotalC - discountC))} para envio grátis</span>
+                <div className="gs-progress"><div style={{ width: `${((subtotalC - discountC) / freeC) * 100}%` }}/></div>
               </div>
             )}
-            <div className="gs-total"><span>Total</span><span>{fmtEUR(subtotal + shipping)}</span></div>
+            <div className="gs-total"><span>Total</span><span>{eur(totalC)}</span></div>
           </div>
+
+          {err && <div className="gs-error" role="alert">{err}</div>}
+          <button className="gs-btn gs-btn-block gs-pay" onClick={pay} disabled={paying || !acc.enabled}>
+            {paying ? "A abrir o pagamento…" : `Pagar ${eur(totalC)}`}
+          </button>
           <div className="gs-checkout-note">
-            O pagamento online (cartão, MB WAY e Multibanco) chega em breve.
-            Até lá, envia-nos a tua bolsa por mensagem e tratamos da encomenda.
+            Pagamento seguro pela Stripe: cartão, MB WAY ou Multibanco. A morada é pedida no passo seguinte.
+            Do Brasil ou de outro país? <a href="contact.html">Fala connosco por mensagem</a>.
           </div>
-          <a className="gs-btn gs-btn-block" href="contact.html">Encomendar por mensagem</a>
-          <button className="gs-btn gs-btn-ghost gs-btn-block" onClick={onClear}>Esvaziar bolsa</button>
+          <button className="gs-btn gs-btn-ghost gs-btn-block" onClick={onClear} disabled={paying}>Esvaziar bolsa</button>
+        </>
+      )}
+    </Panel>
+  );
+}
+
+/** Ecrã depois de voltar da Stripe (?pedido=ok / ?pedido=cancelado). */
+function OrderPanel({ ok, onClose }) {
+  return (
+    <Panel title={ok ? "✅ Encomenda recebida" : "Pagamento cancelado"} accent={ok ? N.green : N.magenta} onClose={onClose}
+      footer={<button className="gs-btn" onClick={onClose}>Voltar à ilha</button>}>
+      {ok ? (
+        <>
+          <p>Obrigado! O pagamento foi registado e vais receber um recibo por email.</p>
+          <p className="gs-muted">Se pagaste por Multibanco, a encomenda fica confirmada assim que a referência for paga.
+            Enviamos a peça à mão, normalmente em 2 a 4 dias úteis.</p>
+        </>
+      ) : (
+        <>
+          <p>Não foi cobrado nada. A tua bolsa continua guardada.</p>
+          <p className="gs-muted">Se usaste pontos, voltam para a tua conta dentro de uma hora.</p>
         </>
       )}
     </Panel>
@@ -429,7 +512,15 @@ function PixelStore() {
   const [open, setOpen] = useState(null);   // id do painel aberto
   const [death, setDeath] = useState(null);
   const [toast, setToast] = useState(null);
-  const [cart, setCart] = useState(() => { try { return JSON.parse(safeGet(CART_KEY)) || []; } catch (_) { return []; } });
+  const [cart, setCart] = useState(() => {
+    let c = [];
+    try { c = JSON.parse(safeGet(CART_KEY)) || []; } catch (_) { c = []; }
+    // bolsas antigas não tinham "id": recupera pelo nome e descarta o que já não existe
+    return c.map(i => {
+      const p = PRODUCTS.find(x => (i.id && x.id === i.id) || x.name === i.name);
+      return p && !p.external ? { ...i, id: p.id } : null;
+    }).filter(Boolean);
+  });
   const [showHint, setShowHint] = useState(() => !safeGet(HINT_KEY));
 
   const notify = useCallback((msg, col = N.gold) => {
@@ -461,13 +552,13 @@ function PixelStore() {
 
   const addToCart = (p, qty) => {
     setCart(c => {
-      const ex = c.find(i => i.name === p.name);
-      if (ex) return c.map(i => i.name === p.name ? { ...i, qty: Math.min(p.stock, i.qty + qty) } : i);
-      return [...c, { name: p.name, price: p.price, emoji: p.emoji, stock: p.stock, qty }];
+      const ex = c.find(i => i.id === p.id);
+      if (ex) return c.map(i => i.id === p.id ? { ...i, price: p.price, stock: p.stock, qty: Math.min(p.stock, i.qty + qty) } : i);
+      return [...c, { id: p.id, name: p.name, price: p.price, emoji: p.emoji, stock: p.stock, qty }];
     });
     notify(`${p.emoji} ${p.name} ×${qty} na bolsa`, N.green);
   };
-  const changeQty = (name, q) => setCart(c => q <= 0 ? c.filter(i => i.name !== name) : c.map(i => i.name === name ? { ...i, qty: q } : i));
+  const changeQty = (id, q) => setCart(c => q <= 0 ? c.filter(i => i.id !== id) : c.map(i => i.id === id ? { ...i, qty: q } : i));
   const cartCount = cart.reduce((n, i) => n + i.qty, 0);
 
   const doUpgrade = id => {
@@ -478,6 +569,28 @@ function PixelStore() {
   };
 
   const acc = useAccount();
+
+  // quando os preços/stock oficiais chegam do Supabase, acerta a bolsa
+  useEffect(() => {
+    if (!acc.ready) return;
+    setCart(c => c.map(i => {
+      const p = PRODUCTS.find(x => x.id === i.id);
+      return p ? { ...i, price: p.price, stock: p.stock, qty: Math.min(i.qty, Math.max(p.stock, 0)) } : i;
+    }).filter(i => i.qty > 0));
+  }, [acc.ready]);
+
+  // regresso da página de pagamento
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const r = params.get("pedido");
+    if (r !== "ok" && r !== "cancelado") return;
+    if (r === "ok") setCart([]);
+    setOpen(r === "ok" ? "pedido-ok" : "pedido-cancelado");
+    params.delete("pedido");
+    const q = params.toString();
+    window.history.replaceState(null, "", window.location.pathname + (q ? `?${q}` : "") + window.location.hash);
+  }, []);
+
   const building = BUILDINGS.find(b => b.id === open);
   const close = () => setOpen(null);
 
@@ -504,7 +617,8 @@ function PixelStore() {
       </div>
 
       {open === "mercado" && <MarketPanel onClose={close} onAdd={addToCart} cartCount={cartCount} onOpenCart={() => setOpen("cart")}/>}
-      {open === "cart" && <CartPanel cart={cart} onClose={close} onChange={changeQty} onClear={() => setCart([])}/>}
+      {open === "cart" && <CartPanel cart={cart} acc={acc} onClose={close} onChange={changeQty} onClear={() => setCart([])} onLogin={() => setOpen("account")}/>}
+      {(open === "pedido-ok" || open === "pedido-cancelado") && <OrderPanel ok={open === "pedido-ok"} onClose={() => { close(); Account.refresh(); }}/>}
       {open === "quests" && <QuestPanel onClose={close} acc={acc} onLogin={() => setOpen("account")} notify={notify}/>}
       {open === "account" && <AccountPanel acc={acc} onClose={close} notify={notify}/>}
       {open === "help" && <HelpPanel onClose={close}/>}
