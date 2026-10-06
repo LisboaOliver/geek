@@ -4,7 +4,7 @@
 // eventos vindos da base de dados, progresso das quests e reclamar pontos.
 //
 // O URL e a chave pública abaixo podem estar no código do site: quem protege
-// os dados são as regras de segurança da base de dados (supabase/schema.sql).
+// os dados são as regras de segurança da base de dados (supabase/migrations/).
 // NUNCA pôr aqui a "secret key" / "service_role".
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -1,10 +1,19 @@
 # Ligar a loja ao Supabase (contas e pontos)
 
+> **Atalho com a CLI** (na pasta do projeto, depois de `npm install`):
+> ```
+> npx supabase login
+> npx supabase link --project-ref fstnhbhzadgqcvzsvkwb
+> npx supabase db push          # cria as tabelas (pasta supabase/migrations)
+> npm run functions:deploy      # publica checkout e stripe-webhook
+> ```
+> Com isto os passos 1 deste guia e 2–3 do GUIA-PAGAMENTOS ficam feitos. O resto (login por email, segredos, Stripe) é no painel.
+
 São 3 passos, uma única vez. Tudo no painel do Supabase (supabase.com → o seu projeto).
 
 ## 1. Criar a base de dados
 1. Menu da esquerda → **SQL Editor** → **New query**.
-2. Abra o ficheiro `supabase/schema.sql` deste projeto, copie tudo e cole.
+2. Abra o ficheiro `supabase/migrations/20261006120000_contas_e_quests.sql` deste projeto, copie tudo e cole.
 3. Carregue em **Run**. Deve aparecer "Success. No rows returned".
 
 Isto cria:

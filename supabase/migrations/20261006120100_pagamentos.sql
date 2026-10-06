@@ -1,6 +1,6 @@
 -- ════════════════════════════════════════════════════════════════════════════
 -- Geekonverse · Ilha — PAGAMENTOS (Stripe)
--- Corra DEPOIS do schema.sql. SQL Editor → New query → Run.
+-- Corra DEPOIS de 20261006120000_contas_e_quests.sql. SQL Editor → New query → Run.
 -- Pode correr de novo sem problema.
 -- ════════════════════════════════════════════════════════════════════════════
 
