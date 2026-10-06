@@ -12,7 +12,6 @@ const { useState, useEffect, useRef, useCallback } = React;
 const fmtEUR = p => `${p.toFixed(2).replace(".", ",")} ${CURRENCY}`;
 const CART_KEY = "geekonverse-carrinho-v1";
 const HINT_KEY = "geekonverse-dica-vista";
-const BANNER_KEY = "geekonverse-faixa-fechada";
 
 function safeGet(k) { try { return window.localStorage.getItem(k); } catch (_) { return null; } }
 function safeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (_) { /* ignora */ } }
@@ -21,12 +20,7 @@ function safeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (_) { 
 function EventBanner({ onOpenQuests }) {
   const [now, setNow] = useState(Date.now());
   const feat = featuredEvent(now);
-  const [closedId, setClosedId] = useState(() => safeGet(BANNER_KEY));
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
-
-  if (feat && closedId === feat.ev.id) return null;
-
-  const close = () => { if (feat) { safeSet(BANNER_KEY, feat.ev.id); setClosedId(feat.ev.id); } };
 
   if (!feat) {
     return (
@@ -48,7 +42,6 @@ function EventBanner({ onOpenQuests }) {
           : <>Começa {fmtEventDate(ev.start)} · faltam <b>{fmtCountdown(Date.parse(ev.start) - now)}</b></>}
       </span>
       <button className="gs-btn gs-btn-ghost gs-banner-btn" onClick={onOpenQuests}>Ver quest</button>
-      <button className="gs-banner-close" onClick={close} aria-label="Fechar faixa">×</button>
     </div>
   );
 }

@@ -526,13 +526,15 @@ function createGameEngine(canvas, cb) {
   }
 
   // ── Desenho ────────────────────────────────────────────────────────────────
-  let overlay = [];
+  let overlay = [], screenUI = [];
   function render() {
+    // janela minimizada / layout a mudar: o canvas pode ter 0 px por instantes
+    if (!canvas.width || !canvas.height || !(W > 0) || !(H > 0)) return;
     ctx.setTransform(dpr * zoom, 0, 0, dpr * zoom, 0, 0);
     ctx.imageSmoothingEnabled = true;
     FONT_K = 1 / zoom;
     ctx.clearRect(0, 0, W, H);
-    overlay = [];
+    overlay = []; screenUI = [];
     if (scene === "island") renderIsland(); else renderDungeon();
     // a cena inteira passa pelo filtro de pixel art (a mesma textura das personagens)
     drawBats(ctx, W, H, scene === "island" ? islandCam() : cam, t, scene, hero);
@@ -541,6 +543,8 @@ function createGameEngine(canvas, cb) {
     // nomes, números e barras ficam por cima do filtro, nítidos
     overlay.forEach(f => f());
     applyRift(ctx, canvas, W, H, t, scene);
+    ctx.setTransform(dpr * zoom, 0, 0, dpr * zoom, 0, 0);
+    screenUI.forEach(f => f());
   }
 
   function islandCam() { return { ox: cam.ox, oy: cam.oy - Math.abs(Math.sin(t * Math.PI * 2 / VOX.period)) * 3 }; } // a ilha sobe e desce com os passos do elefante
@@ -673,23 +677,28 @@ function createGameEngine(canvas, cb) {
     overlay.push(() => {
     loot.forEach(l => { if (l.kind === "item" && dist(l, hero) < st.light + 1) { const s = iso(l.x, l.y, cam); labelBox(ctx, l.rarity.label, s.x, s.y - 24, l.rarity.color, 14); } });
     drawFloaters(ctx, floaters, cam);
-
-    // nome do monstro sob o rato (no topo, como no Diablo)
-    const focus = hoverMonster || hero.target;
-    if (focus && !focus.dead) {
-      const w = 260;
-      ctx.fillStyle = "rgba(10,6,8,0.85)"; ctx.fillRect(W / 2 - w / 2, 14, w, 44);
-      ctx.strokeStyle = "rgba(179,32,44,0.6)"; ctx.strokeRect(W / 2 - w / 2 + 0.5, 14.5, w - 1, 43);
-      ctx.fillStyle = "#3a0a10"; ctx.fillRect(W / 2 - w / 2 + 8, 42, w - 16, 8);
-      ctx.fillStyle = N.blood; ctx.fillRect(W / 2 - w / 2 + 8, 42, (w - 16) * Math.max(0, focus.hp / focus.maxHp), 8);
-      ctx.font = `600 ${Math.round(17 * FONT_K)}px Cinzel, serif`; ctx.textAlign = "center";
-      ctx.fillStyle = focus.type === "boss" ? N.unique : N.text;
-      ctx.fillText(focus.def.name, W / 2, 36);
-      ctx.textAlign = "left";
-    }
     });
 
+    // nome do monstro sob o rato (no topo, como no Diablo). Vai para depois da
+    // fenda, senão a borda da fenda tapa-o; fica por baixo da barra do HUD.
+    const focus = hoverMonster || hero.target;
+    if (focus && !focus.dead) screenUI.push(() => drawFocusPlate(focus));
+
     postProcess(ctx, W, H, 0.5);
+  }
+
+  function drawFocusPlate(focus) {
+    const k = 1 / zoom;                       // tamanho constante no ecrã
+    const narrow = W * zoom < 640;            // telemóvel: os botões do HUD empilham-se
+    const w = Math.min(260, W * zoom - 140) * k, h = 44 * k, x = W / 2 - w / 2, y = (narrow ? 150 : 56) * k;
+    ctx.fillStyle = "rgba(10,6,8,0.9)"; ctx.fillRect(x, y, w, h);
+    ctx.lineWidth = k; ctx.strokeStyle = "rgba(179,32,44,0.7)"; ctx.strokeRect(x + 0.5 * k, y + 0.5 * k, w - k, h - k);
+    ctx.fillStyle = "#3a0a10"; ctx.fillRect(x + 8 * k, y + 28 * k, w - 16 * k, 8 * k);
+    ctx.fillStyle = N.blood; ctx.fillRect(x + 8 * k, y + 28 * k, (w - 16 * k) * Math.max(0, focus.hp / focus.maxHp), 8 * k);
+    ctx.font = `600 ${Math.round(17 * k)}px Cinzel, serif`; ctx.textAlign = "center";
+    ctx.fillStyle = focus.type === "boss" ? N.unique : N.text;
+    ctx.fillText(focus.def.name, W / 2, y + 22 * k);
+    ctx.textAlign = "left";
   }
 
   function drawDarknessScaled(lights) {
@@ -724,10 +733,15 @@ function createGameEngine(canvas, cb) {
 
   // ── Loop ───────────────────────────────────────────────────────────────────
   function loop(now) {
-    const dt = Math.min(0.05, (now - last) / 1000); last = now;
-    update(dt);
-    render();
+    // agenda já o próximo frame: um erro pontual nunca pode parar o jogo de vez
     rafId = requestAnimationFrame(loop);
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    try {
+      update(dt);
+      render();
+    } catch (e) {
+      if (!loop._warned) { loop._warned = true; console.warn("Frame do jogo falhou (o jogo continua):", e); }
+    }
   }
 
   // modo de teste: store.html?debug expõe o motor na consola

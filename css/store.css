@@ -50,6 +50,7 @@
 .gs-root button { font-family: inherit; }
 
 /* ── faixa de eventos ───────────────────────────────────────────────────── */
+/* mesmo vidro roxo das caixas do site (.glass do style.css) */
 .gs-banner {
   display: flex;
   align-items: center;
@@ -58,30 +59,28 @@
   align-self: center;
   max-width: min(1100px, calc(100% - 16px));
   margin: 4px auto 6px;
-  padding: 8px 10px 8px 16px;
-  background: rgba(12, 8, 12, 0.72);
-  border-radius: 999px;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-shadow: 0 0 0 1px rgba(216, 169, 74, 0.25), 0 0 24px rgba(224, 55, 154, 0.15);
+  padding: 8px 10px 8px 18px;
+  background: rgba(230, 59, 242, 0.171);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(142, 207, 255, 0.3);
   font-size: 15px;
 }
-.gs-banner.is-live { box-shadow: 0 0 0 1px rgba(216, 169, 74, 0.55), 0 0 26px rgba(216, 169, 74, 0.18); }
+.gs-banner.is-live { box-shadow: 0 0 22px rgba(255, 110, 199, 0.45); }
 .gs-banner-tag {
   font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--gs-gold);
+  color: #8ecfff;
 }
-.gs-banner.is-live .gs-banner-tag { color: #ffd36b; }
-.gs-banner-title { font-family: var(--gs-title); font-weight: 700; font-size: 18px; color: var(--gs-text); }
-.gs-banner-text { color: var(--gs-dim); flex: 1 1 260px; }
-.gs-banner-time { color: var(--gs-text); white-space: nowrap; }
-.gs-banner-time b { color: var(--gs-gold); font-variant-numeric: tabular-nums; }
+.gs-banner.is-live .gs-banner-tag { color: #ff9ad8; }
+.gs-banner-title { font-family: var(--gs-title); font-weight: 700; font-size: 18px; color: #fff; }
+.gs-banner-text { color: rgba(255, 255, 255, 0.78); flex: 1 1 260px; }
+.gs-banner-time { color: #fff; white-space: nowrap; }
+.gs-banner-time b { color: #ff9ad8; font-variant-numeric: tabular-nums; }
 .gs-banner-btn { padding: 6px 14px; font-size: 14px; }
-.gs-banner-close {
-  background: none; border: none; color: var(--gs-dim); font-size: 24px; line-height: 1;
-  cursor: pointer; padding: 2px 6px;
-}
-.gs-banner-close:hover { color: var(--gs-text); }
+.gs-banner .gs-btn-ghost { border-color: rgba(255, 255, 255, 0.35); color: #fff; background: rgba(255, 255, 255, 0.06); }
+.gs-banner .gs-btn-ghost:hover { background: rgba(255, 110, 199, 0.2); }
 
 /* ── palco do jogo ──────────────────────────────────────────────────────── */
 .gs-stage { position: relative; flex: 1; min-height: 0; }
@@ -171,7 +170,7 @@ kbd {
 .gs-res-run b { color: #b98cff; }
 
 .gs-toast {
-  position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
+  position: absolute; top: 112px; left: 50%; transform: translateX(-50%);
   background: rgba(14,10,14,.94); border: 1px solid var(--accent); color: var(--accent);
   padding: 10px 18px; border-radius: 8px; font-size: 16px; font-weight: 600;
   pointer-events: none; white-space: nowrap; max-width: calc(100% - 24px); overflow: hidden; text-overflow: ellipsis;
