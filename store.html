@@ -1,49 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geek Store page</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <title>Geek Store · Ilha Geekonverse</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/store.css">
 
     <!-- React + Babel via CDN (zero instalação) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 
-    <!-- Scripts do jogo (ordem importa!) -->
-    <script src="/js/constants.js"></script>
-    <script src="/js/particles.js"></script>
-    <script src="/js/renderer.js"></script>
-    <script src="/js/game.js"></script>
+    <!-- Scripts do jogo (a ordem importa!) -->
+    <script src="js/constants.js"></script>
+    <script src="js/events.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/particles.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/buildings.js"></script>
+    <script src="js/creatures.js"></script>
+    <script src="js/pixel.js"></script>
+    <script src="js/game.js"></script>
+    <!-- Contas de jogador (Supabase) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+    <script src="js/account.js"></script>
 </head>
-<body>
+<body class="pagina_loja">
 
     <header class="cabecalho">
       <nav class="cabecalho_menu">
-        <a class="link_pagina glass" href="/index.html">Home</a>
-        <a class="link_pagina glass" href="/about.html">About us</a>
-        <a class="link_pagina glass" href="/store.html">Store</a>
-      </nav> 
+        <a class="link_pagina glass" href="index.html">Home</a>
+        <a class="link_pagina glass" href="about.html">About us</a>
+        <a class="link_pagina glass" href="store.html">Store</a>
+      </nav>
     </header>
 
-    <main class="conteudo_principal">
+    <main class="conteudo_principal conteudo_loja">
       <!-- React monta aqui -->
       <div id="root"></div>
     </main>
 
     <canvas id="neonGrid"></canvas>
-    <canvas id="gameCanvas"></canvas>
-    <script src="/js/script.js"></script>
+    <script src="js/script.js"></script>
 
     <footer class="rodape">
       <p>@Geekonverse company 2022®</p>
-      <a href="/contact.html">Contacta-nos</a>
+      <a href="contact.html">Contacta-nos</a>
+      <a href="privacypolicy.html">Política de privacidade</a>
     </footer>
 
     <!-- ui.js usa JSX, precisa do Babel -->
-    <script type="text/babel" src="/js/ui.js"></script>
+    <script type="text/babel" src="js/ui.js"></script>
     <script type="text/babel">
       const root = ReactDOM.createRoot(document.getElementById("root"));
       root.render(React.createElement(PixelStore));

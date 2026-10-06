@@ -1,617 +1,515 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // ui.js
-// Toda a camada React: HUD, modais de loja e carrinho, intro, D-pad.
-// Não faz nenhuma renderização canvas — só HTML/CSS via React.
+// Camada React da loja: faixa de eventos no topo, HUD, painéis dos edifícios
+// (mercado, forja, altar, farol, cofre, quests), carrinho e ecrã de morte.
+// Estilos em css/store.css.
 // ─────────────────────────────────────────────────────────────────────────────
 
 "use strict";
 
 const { useState, useEffect, useRef, useCallback } = React;
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-const fmtP     = p => p === 0 ? "GRÁTIS" : `R$ ${p.toFixed(2).replace(".", ",")}`;
-const stkColor = s => s <= 5 ? N.red : s <= 10 ? N.orange : N.green;
+const fmtEUR = p => `${p.toFixed(2).replace(".", ",")} ${CURRENCY}`;
+const CART_KEY = "geekonverse-carrinho-v1";
+const HINT_KEY = "geekonverse-dica-vista";
+const BANNER_KEY = "geekonverse-faixa-fechada";
 
-function btnPrimary(col) {
-  return {
-    background: col, border: "none", color: N.bg,
-    padding: "10px 22px", cursor: "pointer",
-    fontSize: 10, fontFamily: "'Courier New'",
-    fontWeight: "bold", letterSpacing: 2,
-    boxShadow: `0 0 16px ${col}77`,
-  };
-}
-function btnOutline(col) {
-  return {
-    background: "transparent", border: `2px solid ${col}`, color: col,
-    padding: "8px 18px", cursor: "pointer",
-    fontSize: 10, fontFamily: "'Courier New'",
-    fontWeight: "bold", letterSpacing: 2,
-  };
-}
+function safeGet(k) { try { return window.localStorage.getItem(k); } catch (_) { return null; } }
+function safeSet(k, v) { try { window.localStorage.setItem(k, v); } catch (_) { /* ignora */ } }
 
-// ── ItemCard ─────────────────────────────────────────────────────────────────
-function ItemCard({ item, zone, selected, hovered, onSelect, onHover, onAdd, qty, onQtyChange }) {
-  return (
-    <div
-      onClick={() => onSelect(selected ? null : item)}
-      onMouseEnter={() => onHover(item)}
-      onMouseLeave={() => onHover(null)}
-      style={{
-        background: selected ? `${zone.color}1a` : hovered ? `${zone.color}0c` : N.bg,
-        border: `2px solid ${selected ? zone.color : hovered ? zone.color + "66" : N.border}`,
-        padding: 14, cursor: "pointer",
-        boxShadow: selected ? `0 0 20px ${zone.color}44` : "none",
-        transition: "all .1s", display: "flex", flexDirection: "column", gap: 6,
-      }}
-    >
-      {/* imagem PNG se disponível, senão emoji */}
-      {item.image
-        ? <img src={item.image} alt={item.name}
-            style={{ width: "100%", aspectRatio: "1", objectFit: "cover", imageRendering: "pixelated" }}/>
-        : <div style={{ fontSize: 36, textAlign: "center", lineHeight: 1 }}>{item.emoji}</div>
-      }
+// ── Faixa de eventos (substitui a caixa de diálogo inicial) ──────────────────
+function EventBanner({ onOpenQuests }) {
+  const [now, setNow] = useState(Date.now());
+  const feat = featuredEvent(now);
+  const [closedId, setClosedId] = useState(() => safeGet(BANNER_KEY));
+  useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ background: `${zone.color}28`, color: zone.color, fontSize: 8,
-          padding: "2px 6px", letterSpacing: 2, border: `1px solid ${zone.color}55` }}>
-          {item.badge}
-        </span>
-        <span style={{ fontSize: 8, color: stkColor(item.stock) }}>
-          {item.stock <= 5 ? "⚠" : item.stock <= 10 ? "🔥" : ""} {item.stock}un
-        </span>
+  if (feat && closedId === feat.ev.id) return null;
+
+  const close = () => { if (feat) { safeSet(BANNER_KEY, feat.ev.id); setClosedId(feat.ev.id); } };
+
+  if (!feat) {
+    return (
+      <div className="gs-banner">
+        <span className="gs-banner-tag">Ilha Geekonverse</span>
+        <span className="gs-banner-text">Desce às masmorras, junta ouro e evolui a tua ilha. As peças estão no Mercado.</span>
       </div>
+    );
+  }
+  const { ev, status } = feat;
+  return (
+    <div className={`gs-banner ${status === "ativo" ? "is-live" : ""}`} role="status">
+      <span className="gs-banner-tag">{status === "ativo" ? "● Evento ativo" : "Próximo evento"}</span>
+      <span className="gs-banner-title">{ev.title}</span>
+      <span className="gs-banner-text">{ev.desc}</span>
+      <span className="gs-banner-time">
+        {status === "ativo"
+          ? <>Termina em <b>{fmtCountdown(Date.parse(ev.end) - now)}</b></>
+          : <>Começa {fmtEventDate(ev.start)} · faltam <b>{fmtCountdown(Date.parse(ev.start) - now)}</b></>}
+      </span>
+      <button className="gs-btn gs-btn-ghost gs-banner-btn" onClick={onOpenQuests}>Ver quest</button>
+      <button className="gs-banner-close" onClick={close} aria-label="Fechar faixa">×</button>
+    </div>
+  );
+}
 
-      <div style={{ fontSize: 10, fontWeight: "bold", lineHeight: 1.4 }}>{item.name}</div>
-      <div style={{ fontSize: 8, color: N.textDim, lineHeight: 1.5, flex: 1 }}>{item.desc}</div>
+// ── Painel genérico (abre só quando o jogador pede) ──────────────────────────
+function Panel({ title, accent, onClose, children, wide, footer }) {
+  useEffect(() => {
+    const k = e => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [onClose]);
+  return (
+    <div className="gs-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className={`gs-panel ${wide ? "is-wide" : ""}`} style={{ "--accent": accent || N.gold }} role="dialog" aria-label={title}>
+        <header className="gs-panel-head">
+          <h2>{title}</h2>
+          <button className="gs-close" onClick={onClose} aria-label="Fechar">×</button>
+        </header>
+        <div className="gs-panel-body">{children}</div>
+        {footer && <footer className="gs-panel-foot">{footer}</footer>}
+      </div>
+    </div>
+  );
+}
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-        {item.tags.map(t => (
-          <span key={t} style={{ fontSize: 7, color: N.textDim, background: N.panelB,
-            padding: "1px 5px", border: `1px solid ${N.border}` }}>#{t}</span>
+// ── Mercado (produtos) ────────────────────────────────────────────────────────
+function ProductCard({ p, onAdd }) {
+  const [qty, setQty] = useState(1);
+  const ext = !!p.external;
+  return (
+    <article className={`gs-card ${ext ? "is-external" : ""}`}>
+      <div className="gs-card-media">
+        {p.image ? <img src={p.image} alt={p.name}/> : <span className="gs-card-emoji" aria-hidden="true">{p.emoji}</span>}
+        <span className="gs-badge">{p.badge}</span>
+      </div>
+      <h3 className="gs-card-name">{p.name}</h3>
+      <p className="gs-card-desc">{p.desc}</p>
+      {ext ? (
+        <a className="gs-btn gs-btn-ghost gs-card-cta" href={p.external.url} target="_blank" rel="noopener noreferrer">
+          Ver na {p.external.platform} ↗
+        </a>
+      ) : (
+        <>
+          <div className="gs-card-price">
+            {p.old && <s>{fmtEUR(p.old)}</s>}
+            <strong className={p.old ? "is-sale" : ""}>{fmtEUR(p.price)}</strong>
+          </div>
+          <div className={`gs-card-stock ${p.stock <= 5 ? "is-low" : ""}`}>
+            {p.stock <= 5 ? `Só restam ${p.stock}` : `${p.stock} em stock`}
+          </div>
+          <div className="gs-card-actions">
+            <div className="gs-qty">
+              <button onClick={() => setQty(q => Math.max(1, q - 1))} aria-label="Menos">−</button>
+              <span>{qty}</span>
+              <button onClick={() => setQty(q => Math.min(p.stock, q + 1))} aria-label="Mais">+</button>
+            </div>
+            <button className="gs-btn" onClick={() => { onAdd(p, qty); setQty(1); }}>Adicionar</button>
+          </div>
+          <div className="gs-card-official">Peça oficial Geekonverse</div>
+        </>
+      )}
+    </article>
+  );
+}
+
+function MarketPanel({ onClose, onAdd, cartCount, onOpenCart }) {
+  const [filter, setFilter] = useState("todas");
+  const list = PRODUCTS.filter(p => filter === "todas" ? true : filter === "oficiais" ? !p.external : !!p.external);
+  return (
+    <Panel title="🛒 Mercado" accent={N.magenta} onClose={onClose} wide
+      footer={<>
+        <span className="gs-muted">Envio para Portugal e Espanha. Peças externas são vendidas pela própria plataforma.</span>
+        <button className="gs-btn" onClick={onOpenCart}>Ver bolsa{cartCount ? ` (${cartCount})` : ""}</button>
+      </>}>
+      <div className="gs-tabs" role="tablist">
+        {[["todas", "Todas"], ["oficiais", "Peças oficiais"], ["externas", "TeePublic e Redbubble"]].map(([id, label]) => (
+          <button key={id} role="tab" aria-selected={filter === id} className={filter === id ? "is-on" : ""} onClick={() => setFilter(id)}>{label}</button>
         ))}
       </div>
-
-      {item.old && <div style={{ fontSize: 9, color: N.textDim, textDecoration: "line-through" }}>{fmtP(item.old)}</div>}
-      <div style={{ fontSize: item.price === 0 ? 10 : 14, fontWeight: "bold",
-        color: item.price === 0 ? zone.color : item.old ? N.red : zone.color }}>
-        {fmtP(item.price)}
+      <div className="gs-grid">
+        {list.map(p => <ProductCard key={p.name} p={p} onAdd={onAdd}/>)}
       </div>
+    </Panel>
+  );
+}
 
-      {selected && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <button onClick={e => { e.stopPropagation(); onQtyChange(q => Math.max(1, q - 1)); }}
-              style={{ ...btnOutline(zone.color), padding: "2px 8px", fontSize: 12 }}>-</button>
-            <span style={{ fontSize: 11, color: zone.color, flex: 1, textAlign: "center" }}>×{qty}</span>
-            <button onClick={e => { e.stopPropagation(); onQtyChange(q => Math.min(item.stock, q + 1)); }}
-              style={{ ...btnOutline(zone.color), padding: "2px 8px", fontSize: 12 }}>+</button>
+// ── Carrinho ──────────────────────────────────────────────────────────────────
+function CartPanel({ cart, onClose, onChange, onClear }) {
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const shipping = subtotal === 0 || subtotal >= FREE_SHIPPING_FROM ? 0 : SHIPPING_COST;
+  return (
+    <Panel title="🎒 Bolsa do Aventureiro" accent={N.magenta} onClose={onClose}>
+      {cart.length === 0 ? (
+        <div className="gs-empty">
+          <div className="gs-empty-icon">🎒</div>
+          <p>A tua bolsa está vazia.</p>
+          <p className="gs-muted">As peças estão no Mercado da ilha.</p>
+        </div>
+      ) : (
+        <>
+          <ul className="gs-cart">
+            {cart.map(i => (
+              <li key={i.name}>
+                <span className="gs-cart-emoji" aria-hidden="true">{i.emoji}</span>
+                <span className="gs-cart-name">{i.name}<small>{fmtEUR(i.price)} cada</small></span>
+                <div className="gs-qty">
+                  <button onClick={() => onChange(i.name, i.qty - 1)} aria-label="Menos">−</button>
+                  <span>{i.qty}</span>
+                  <button onClick={() => onChange(i.name, Math.min(i.stock, i.qty + 1))} aria-label="Mais">+</button>
+                </div>
+                <strong>{fmtEUR(i.price * i.qty)}</strong>
+              </li>
+            ))}
+          </ul>
+          <div className="gs-summary">
+            <div><span>Subtotal</span><span>{fmtEUR(subtotal)}</span></div>
+            <div><span>Envio (PT/ES)</span><span>{shipping ? fmtEUR(shipping) : "Grátis"}</span></div>
+            {shipping > 0 && (
+              <div className="gs-progress-row">
+                <span className="gs-muted">Faltam {fmtEUR(FREE_SHIPPING_FROM - subtotal)} para envio grátis</span>
+                <div className="gs-progress"><div style={{ width: `${(subtotal / FREE_SHIPPING_FROM) * 100}%` }}/></div>
+              </div>
+            )}
+            <div className="gs-total"><span>Total</span><span>{fmtEUR(subtotal + shipping)}</span></div>
           </div>
-          <button onClick={e => { e.stopPropagation(); onAdd(item, qty); }}
-            style={{ ...btnPrimary(zone.color), padding: "8px 0", width: "100%", fontSize: 9 }}>
-            + ADICIONAR{qty > 1 ? ` ×${qty}` : ""}
-          </button>
+          <div className="gs-checkout-note">
+            O pagamento online (cartão, MB WAY e Multibanco) chega em breve.
+            Até lá, envia-nos a tua bolsa por mensagem e tratamos da encomenda.
+          </div>
+          <a className="gs-btn gs-btn-block" href="contact.html">Encomendar por mensagem</a>
+          <button className="gs-btn gs-btn-ghost gs-btn-block" onClick={onClear}>Esvaziar bolsa</button>
+        </>
+      )}
+    </Panel>
+  );
+}
+
+// ── Edifícios que evoluem ─────────────────────────────────────────────────────
+function UpgradePanel({ b, state, onUpgrade, onClose }) {
+  const lvl = state.levels[b.id];
+  const max = lvl >= MAX_LEVEL;
+  const cost = upgradeCost(lvl);
+  const canPay = state.gold >= cost.gold && state.crystals >= cost.crystals;
+  const u = b.upgrade;
+  const fmt = v => (Number.isInteger(v) ? v : v.toFixed(1)).toString().replace(".", ",");
+  return (
+    <Panel title={`${b.glyph} ${b.name}`} accent={b.color} onClose={onClose}>
+      <p className="gs-lead">{b.desc}</p>
+      <div className="gs-stars" aria-label={`Nível ${lvl} de ${MAX_LEVEL}`}>
+        {Array.from({ length: MAX_LEVEL }, (_, i) => <span key={i} className={i < lvl ? "is-on" : ""}>★</span>)}
+        <span className="gs-muted"> Nível {lvl} de {MAX_LEVEL}</span>
+      </div>
+      {BUILDING_STAGES[b.id] && (
+        <div className="gs-stages">
+          <div><span className="gs-muted">Agora</span><b>{BUILDING_STAGES[b.id][lvl]}</b></div>
+          {!max && <div><span className="gs-muted">Próximo nível</span><b className="gs-accent">{BUILDING_STAGES[b.id][lvl + 1]}</b></div>}
         </div>
       )}
-    </div>
-  );
-}
-
-// ── ShopModal ─────────────────────────────────────────────────────────────────
-function ShopModal({ zone, onClose, onAddToCart }) {
-  const [sel, setSel]   = useState(null);
-  const [qty, setQty]   = useState(1);
-  const [hov, setHov]   = useState(null);
-  const [tab, setTab]   = useState("loja");
-
-  const handleSelect = item => { setSel(item); setQty(1); setTab("loja"); };
-  const handleAdd    = (item, q) => { onAddToCart(item, q); setSel(null); setQty(1); };
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.9)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="anim-modal" style={{ background: N.panel, border: `3px solid ${zone.color}`,
-        maxWidth: 680, width: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column",
-        boxShadow: `0 0 80px ${zone.color}55` }}>
-
-        {/* Header */}
-        <div style={{ background: `${zone.color}14`, borderBottom: `2px solid ${zone.color}88`,
-          padding: "14px 20px", display: "flex", justifyContent: "space-between",
-          alignItems: "center", flexShrink: 0 }}>
-          <div>
-            <div style={{ fontSize: 16, fontWeight: "bold", letterSpacing: 4,
-              color: zone.color, textShadow: `0 0 14px ${zone.color}` }}>
-              {zone.glyph} {zone.name}
-            </div>
-            <div style={{ fontSize: 9, color: N.textDim, letterSpacing: 2, marginTop: 3 }}>
-              {zone.sub} — {zone.items.length} ITENS
-            </div>
-          </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {sel && <>
-              <button onClick={() => setTab("loja")} style={{ ...btnOutline(tab === "loja" ? zone.color : N.border),
-                padding: "4px 12px", fontSize: 9, color: tab === "loja" ? zone.color : N.textDim }}>LOJA</button>
-              <button onClick={() => setTab("detalhes")} style={{ ...btnOutline(tab === "detalhes" ? zone.color : N.border),
-                padding: "4px 12px", fontSize: 9, color: tab === "detalhes" ? zone.color : N.textDim }}>DETALHES</button>
-            </>}
-            <button onClick={onClose} style={btnOutline(zone.color)}>[ESC]</button>
-          </div>
-        </div>
-
-        {/* Grid de itens */}
-        {tab === "loja" && (
-          <div style={{ padding: 20, display: "grid",
-            gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))",
-            gap: 12, overflowY: "auto", flex: 1 }}>
-            {zone.items.map((item, i) => (
-              <ItemCard key={i} item={item} zone={zone}
-                selected={sel === item} hovered={hov === item}
-                qty={qty}
-                onSelect={handleSelect} onHover={setHov}
-                onAdd={handleAdd} onQtyChange={setQty}/>
-            ))}
-          </div>
-        )}
-
-        {/* Aba detalhes */}
-        {tab === "detalhes" && sel && (
-          <div style={{ padding: 24, overflowY: "auto", flex: 1,
-            display: "flex", gap: 24, flexWrap: "wrap" }}>
-            <div style={{ flex: "0 0 180px", display: "flex", flexDirection: "column", gap: 12 }}>
-              {sel.image
-                ? <img src={sel.image} alt={sel.name}
-                    style={{ width: "100%", border: `2px solid ${zone.color}44`,
-                      imageRendering: "pixelated" }}/>
-                : <div style={{ background: N.bg, border: `2px solid ${zone.color}44`,
-                    padding: 24, textAlign: "center", fontSize: 64, lineHeight: 1 }}>
-                    {sel.emoji}
-                  </div>
-              }
-              <div style={{ background: `${zone.color}18`, border: `1px solid ${zone.color}44`, padding: 12 }}>
-                <div style={{ fontSize: 8, color: N.textDim, letterSpacing: 2, marginBottom: 6 }}>ESTOQUE</div>
-                <div style={{ fontSize: 18, fontWeight: "bold", color: stkColor(sel.stock) }}>{sel.stock} un.</div>
-                <div style={{ height: 4, background: N.bg, marginTop: 6 }}>
-                  <div style={{ height: "100%", background: stkColor(sel.stock),
-                    width: `${Math.min(100, (sel.stock / 30) * 100)}%` }}/>
-                </div>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                {sel.tags.map(t => (
-                  <span key={t} style={{ fontSize: 8, color: zone.color, background: `${zone.color}18`,
-                    padding: "3px 8px", border: `1px solid ${zone.color}44`, letterSpacing: 1 }}>#{t}</span>
-                ))}
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: 200, display: "flex", flexDirection: "column", gap: 14 }}>
-              <div>
-                <div style={{ fontSize: 8, color: N.textDim, letterSpacing: 2, marginBottom: 4 }}>ITEM</div>
-                <div style={{ fontSize: 16, fontWeight: "bold", lineHeight: 1.3 }}>{sel.name}</div>
-              </div>
-              <div style={{ background: N.bg, border: `1px solid ${N.border}`, padding: 12,
-                fontSize: 10, color: N.textDim, lineHeight: 1.8 }}>{sel.desc}</div>
-              <div style={{ background: N.bg, border: `2px solid ${zone.color}55`, padding: 14 }}>
-                {sel.old && <div style={{ fontSize: 10, color: N.textDim, textDecoration: "line-through", marginBottom: 4 }}>
-                  De: {fmtP(sel.old)}
-                </div>}
-                <div style={{ fontSize: 24, fontWeight: "bold",
-                  color: sel.price === 0 ? zone.color : sel.old ? N.red : zone.color }}>
-                  {fmtP(sel.price)}
-                </div>
-                {sel.old && <div style={{ fontSize: 9, color: N.green, marginTop: 4 }}>
-                  Você economiza: {fmtP(sel.old - sel.price)}
-                </div>}
-              </div>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button onClick={() => setQty(q => Math.max(1, q - 1))}
-                  style={{ ...btnOutline(zone.color), padding: "8px 14px", fontSize: 14 }}>-</button>
-                <span style={{ fontSize: 14, fontWeight: "bold", color: zone.color,
-                  minWidth: 40, textAlign: "center" }}>×{qty}</span>
-                <button onClick={() => setQty(q => Math.min(sel.stock, q + 1))}
-                  style={{ ...btnOutline(zone.color), padding: "8px 14px", fontSize: 14 }}>+</button>
-              </div>
-              <button onClick={() => handleAdd(sel, qty)}
-                style={{ ...btnPrimary(zone.color), padding: "12px 0", fontSize: 12, letterSpacing: 3 }}>
-                ⚡ ADICIONAR À BOLSA{qty > 1 ? ` ×${qty}` : ""}
-              </button>
-              <div style={{ fontSize: 9, color: N.textDim, letterSpacing: 1, lineHeight: 1.8 }}>
-                🚚 Envio em 24h &nbsp;•&nbsp; 🔄 Troca em 30 dias &nbsp;•&nbsp; ✅ Produto oficial
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <div style={{ borderTop: `1px solid ${N.border}`, padding: "10px 20px",
-          display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
-          <div style={{ fontSize: 9, color: N.textDim, letterSpacing: 1 }}>
-            {sel ? `${sel.emoji} ${sel.name} — ${fmtP(sel.price)}` : "CLIQUE EM UM ITEM PARA SELECIONAR"}
-          </div>
-          {sel && tab === "loja" && (
-            <button onClick={() => handleAdd(sel, qty)} style={{ ...btnPrimary(zone.color), padding: "8px 22px" }}>
-              + ADICIONAR À BOLSA
-            </button>
-          )}
-        </div>
+      <div className="gs-statline">
+        Bónus atual: <b>+{fmt(u.per * lvl)} {u.unit}</b>
+        {!max && <> → <b className="gs-accent">+{fmt(u.per * (lvl + 1))}</b></>}
       </div>
-    </div>
-  );
-}
-
-// ── CartModal ─────────────────────────────────────────────────────────────────
-function CartModal({ cart, onClose, onRemove, onClear }) {
-  const totalItems = cart.length;
-  const totalPrice = cart.reduce((s, i) => s + (i.price || 0), 0);
-  const grouped    = cart.reduce((acc, item) => {
-    if (!acc[item.name]) acc[item.name] = { ...item, count: 0, uids: [] };
-    acc[item.name].count++;
-    acc[item.name].uids.push(item.uid);
-    return acc;
-  }, {});
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.9)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="anim-modal" style={{ background: N.panel, border: `3px solid ${N.magenta}`,
-        maxWidth: 520, width: "100%", maxHeight: "88vh", display: "flex", flexDirection: "column",
-        boxShadow: `0 0 70px ${N.magenta}44` }}>
-
-        <div style={{ background: `${N.magenta}14`, borderBottom: `2px solid ${N.magenta}66`,
-          padding: "14px 20px", display: "flex", justifyContent: "space-between", flexShrink: 0 }}>
-          <div>
-            <div style={{ color: N.magenta, fontSize: 15, letterSpacing: 4, fontWeight: "bold" }}>
-              🛒 BOLSA DO AVENTUREIRO
-            </div>
-            <div style={{ fontSize: 9, color: N.textDim, letterSpacing: 2, marginTop: 3 }}>
-              {totalItems} ITEM{totalItems !== 1 ? "S" : ""} — {Object.keys(grouped).length} TIPO{Object.keys(grouped).length !== 1 ? "S" : ""}
-            </div>
+      {max ? (
+        <div className="gs-note">Este edifício está no nível máximo.</div>
+      ) : (
+        <>
+          <div className="gs-cost">
+            <span className={state.gold >= cost.gold ? "" : "is-short"}>🪙 {cost.gold} ouro</span>
+            {cost.crystals > 0 && <span className={state.crystals >= cost.crystals ? "" : "is-short"}>💎 {cost.crystals} cristais</span>}
           </div>
-          <button onClick={onClose} style={btnOutline(N.magenta)}>[ESC]</button>
-        </div>
-
-        <div style={{ padding: 20, overflowY: "auto", flex: 1 }}>
-          {cart.length === 0 ? (
-            <div style={{ textAlign: "center", color: N.textDim, padding: "40px 0", letterSpacing: 2 }}>
-              <div style={{ fontSize: 52, marginBottom: 14 }}>🎒</div>
-              <div style={{ fontSize: 12, marginBottom: 6 }}>BOLSA VAZIA</div>
-              <div style={{ fontSize: 9, color: N.dim }}>EXPLORE O MAPA PARA ENCONTRAR ITENS</div>
-            </div>
-          ) : (
-            <>
-              {Object.values(grouped).map(group => (
-                <div key={group.name} style={{ display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 0", borderBottom: `1px solid ${N.border}` }}>
-                  {group.image
-                    ? <img src={group.image} alt={group.name} style={{ width: 36, height: 36, imageRendering: "pixelated" }}/>
-                    : <div style={{ fontSize: 28 }}>{group.emoji}</div>
-                  }
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 10, fontWeight: "bold" }}>{group.name}</div>
-                    <div style={{ fontSize: 8, color: N.textDim, marginTop: 2 }}>{group.badge}</div>
-                  </div>
-                  {group.count > 1 && (
-                    <div style={{ background: N.magenta + "22", border: `1px solid ${N.magenta}44`,
-                      color: N.magenta, fontSize: 10, padding: "2px 10px", fontWeight: "bold" }}>
-                      ×{group.count}
-                    </div>
-                  )}
-                  <div style={{ color: group.price === 0 ? N.green : N.magenta,
-                    fontSize: 12, fontWeight: "bold", minWidth: 90, textAlign: "right" }}>
-                    {group.price === 0 ? "GRÁTIS" : fmtP(group.price * group.count)}
-                  </div>
-                  <button onClick={() => onRemove(group.uids[group.uids.length - 1])}
-                    style={{ background: "transparent", border: `1px solid ${N.red}44`,
-                      color: N.red, fontSize: 10, cursor: "pointer", padding: "2px 6px",
-                      fontFamily: "'Courier New'" }}>✕</button>
-                </div>
-              ))}
-
-              {/* Resumo */}
-              <div style={{ marginTop: 20, background: N.bg, border: `1px solid ${N.border}`, padding: 16 }}>
-                <div style={{ fontSize: 9, color: N.textDim, letterSpacing: 2, marginBottom: 12 }}>RESUMO DO PEDIDO</div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: N.textDim, marginBottom: 6 }}>
-                  <span>Subtotal ({totalItems} itens)</span><span>{fmtP(totalPrice)}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: N.green, marginBottom: 6 }}>
-                  <span>Frete</span><span>{totalPrice >= 200 ? "GRÁTIS" : "R$ 19,90"}</span>
-                </div>
-                {totalPrice < 200 && (
-                  <div style={{ fontSize: 8, color: N.textDim, borderTop: `1px solid ${N.border}`, paddingTop: 8, marginTop: 4 }}>
-                    Falta {fmtP(200 - totalPrice)} para frete grátis!
-                    <div style={{ height: 3, background: N.border, marginTop: 4 }}>
-                      <div style={{ height: "100%", background: N.green, width: `${(totalPrice / 200) * 100}%` }}/>
-                    </div>
-                  </div>
-                )}
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 16, fontWeight: "bold",
-                  color: N.magenta, textShadow: `0 0 12px ${N.magenta}`, marginTop: 12, paddingTop: 12,
-                  borderTop: `2px solid ${N.magenta}44` }}>
-                  <span>TOTAL</span>
-                  <span>{fmtP(totalPrice + (totalPrice >= 200 ? 0 : 19.90))}</span>
-                </div>
-              </div>
-              <button style={{ ...btnPrimary(N.magenta), width: "100%", padding: 14, fontSize: 12,
-                letterSpacing: 3, marginTop: 14 }}>
-                ⚡ FINALIZAR QUEST
-              </button>
-              <button onClick={onClear} style={{ ...btnOutline(N.border), width: "100%", padding: 8,
-                fontSize: 9, marginTop: 8, color: N.textDim, letterSpacing: 2 }}>
-                ESVAZIAR BOLSA
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+          <button className="gs-btn gs-btn-block" disabled={!canPay} onClick={() => onUpgrade(b.id)}>
+            {canPay ? "Melhorar" : "Recursos insuficientes"}
+          </button>
+          {!canPay && <p className="gs-muted gs-center">Tens {state.gold} de ouro e {state.crystals} cristais. Desce às masmorras para juntar mais.</p>}
+        </>
+      )}
+    </Panel>
   );
 }
 
-// ── IntroModal ────────────────────────────────────────────────────────────────
-function IntroModal({ onStart }) {
+// ── Quadro de quests ──────────────────────────────────────────────────────────
+// ── Conta (login por link mágico) ─────────────────────────────────────────────
+function useAccount() {
+  const [acc, setAcc] = useState(null);
+  useEffect(() => (window.Account ? Account.subscribe(setAcc) : undefined), []);
+  return acc || { enabled: false, ready: false, user: null, points: 0, claims: new Set() };
+}
+
+function AccountPanel({ acc, onClose, notify }) {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [err, setErr] = useState(null);
+  const send = async e => {
+    e.preventDefault(); setErr(null); setBusy(true);
+    try { await Account.sendLink(email.trim()); setSent(true); }
+    catch (x) { setErr(x.message); }
+    setBusy(false);
+  };
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.97)",
-      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: 20 }}>
-      <div className="anim-modal" style={{ background: N.panel, border: `3px solid ${N.magenta}`,
-        maxWidth: 480, width: "100%", padding: 36, textAlign: "center",
-        boxShadow: `0 0 100px ${N.magenta}55, 0 0 180px ${N.cyan}22` }}>
-
-        <div className="anim-logo" style={{ fontSize: 56, marginBottom: 4 }}>👾</div>
-        <div style={{ fontSize: 10, letterSpacing: 4, color: N.textDim, marginBottom: 4 }}>GEEKONVERSE APRESENTA</div>
-        <div style={{ fontSize: 26, fontWeight: "bold", letterSpacing: 6, color: N.magenta,
-          textShadow: `0 0 20px ${N.magenta}`, marginBottom: 4 }}>GEEK STORE</div>
-        <div style={{ fontSize: 9, letterSpacing: 4, color: N.cyan,
-          textShadow: `0 0 8px ${N.cyan}`, marginBottom: 28 }}>PIXEL RPG • INVADINDO UNIVERSOS</div>
-
-        <div style={{ background: N.bg, border: `1px solid ${N.border}`, padding: "16px 20px",
-          marginBottom: 20, fontSize: 10, color: N.textDim, lineHeight: 2.2, textAlign: "left" }}>
-          <div style={{ color: N.yellow, marginBottom: 8, letterSpacing: 2, fontSize: 11 }}>📜 PRÓLOGO</div>
-          <span style={{ color: N.text }}>Herói,</span> bem-vindo à Geek Store do Geekonverse!<br/>
-          Explore as 4 zonas e descubra{" "}
-          <span style={{ color: N.cyan }}>drops exclusivos</span>,{" "}
-          <span style={{ color: N.magenta }}>promoções épicas</span>,{" "}
-          <span style={{ color: N.green }}>mais vendidos</span> e{" "}
-          <span style={{ color: N.yellow }}>cupons VIP</span>.<br/><br/>
-          Aproxime dos <span style={{ color: N.magenta }}>NPCs piscantes</span> e pressione{" "}
-          <strong style={{ color: N.magenta }}>[E]</strong>!
+    <Panel title="👤 A tua conta" accent={N.gold} onClose={onClose}>
+      {!acc.enabled ? (
+        <p className="gs-muted">As contas não estão disponíveis de momento. Tenta mais tarde.</p>
+      ) : acc.user ? (
+        <>
+          <p className="gs-lead">Entraste como <b>{acc.user.email}</b>.</p>
+          <div className="gs-points-big"><span>⭐</span><b>{acc.points}</b><small>pontos de promoção</small></div>
+          <p className="gs-muted">Ganhas pontos nas mini quests do Quadro de Quests. Em breve vais poder trocá-los por descontos nas peças oficiais.</p>
+          <button className="gs-btn gs-btn-ghost gs-btn-block" onClick={async () => { await Account.signOut(); notify("Saíste da conta"); }}>Sair</button>
+        </>
+      ) : sent ? (
+        <div className="gs-note">
+          Enviámos um link para <b>{email}</b>. Abre o email neste dispositivo e carrega no link para entrar.
+          Se não o encontrares, vê também a pasta de spam.
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 24 }}>
-          {ZONES.map(z => (
-            <div key={z.id} style={{ background: `${z.color}10`, border: `1px solid ${z.color}44`,
-              padding: "8px 12px", fontSize: 9, color: z.color, letterSpacing: 1,
-              textAlign: "left", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 16 }}>{z.glyph}</span><span>{z.name}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 28, flexWrap: "wrap" }}>
-          {["↑↓←→ MOVER","WASD MOVER","[E] ABRIR","ESC FECHAR"].map(s => (
-            <div key={s} style={{ background: N.bg, padding: "5px 12px",
-              border: `1px solid ${N.border}`, fontSize: 9, color: N.textDim, letterSpacing: 1 }}>{s}</div>
-          ))}
-        </div>
-
-        <button onClick={onStart} style={{ ...btnPrimary(N.magenta), padding: "14px 52px", fontSize: 14, letterSpacing: 6 }}>
-          ▶ INICIAR
-        </button>
-      </div>
-    </div>
+      ) : (
+        <form onSubmit={send} className="gs-login">
+          <p className="gs-lead">Entra para guardar os teus pontos de promoção. Não precisas de senha: enviamos-te um link por email.</p>
+          <label htmlFor="gs-email">Email</label>
+          <input id="gs-email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="o.teu@email.com"/>
+          {err && <p className="gs-error" role="alert">{err}</p>}
+          <button className="gs-btn gs-btn-block" disabled={busy}>{busy ? "A enviar…" : "Enviar link de entrada"}</button>
+          <p className="gs-muted gs-small">Ao criar conta aceitas a <a href="privacypolicy.html">política de privacidade</a>.</p>
+        </form>
+      )}
+    </Panel>
   );
 }
 
-// ── HelpPanel ─────────────────────────────────────────────────────────────────
+function QuestPanel({ onClose, acc, onLogin, notify }) {
+  const [busyId, setBusyId] = useState(null);
+  const claim = async ev => {
+    setBusyId(ev.id);
+    try { const r = await Account.claim(ev); notify(`+${r.awarded} pontos de promoção!`, N.gold); }
+    catch (x) { notify(x.message, N.blood); }
+    setBusyId(null);
+  };
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const i = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(i); }, []);
+  const list = [...EVENTS].sort((a, b) => Date.parse(a.start) - Date.parse(b.start))
+    .filter(e => eventStatus(e, now) !== "terminado");
+  return (
+    <Panel title="📜 Quadro de Quests" accent={N.gold} onClose={onClose}>
+      <p className="gs-lead">Mini quests com dia e hora. Cada uma dá pontos de promoção para descontos na loja.</p>
+      {!acc.user && <div className="gs-note">Para reclamar pontos tens de <button className="gs-link" onClick={onLogin}>entrar na tua conta</button>. O progresso conta na mesma enquanto jogas.</div>}
+      {list.length === 0 && <p className="gs-muted gs-center">Sem eventos marcados de momento. Volta em breve!</p>}
+      <ul className="gs-quests">
+        {list.map(ev => {
+          const st = eventStatus(ev, now);
+          return (
+            <li key={ev.id} className={st === "ativo" ? "is-live" : ""}>
+              <div className="gs-quest-top">
+                <span className={`gs-pill ${st === "ativo" ? "is-live" : ""}`}>{st === "ativo" ? "A decorrer" : "Em breve"}</span>
+                <span className="gs-quest-points">{ev.points} pontos</span>
+              </div>
+              <h3>{ev.title}</h3>
+              <p>{ev.desc}</p>
+              <div className="gs-quest-meta">
+                <span>🎯 {OBJECTIVE_TEXT[ev.objective.type]?.(ev.objective.value)}</span>
+                <span>🕒 {fmtEventDate(ev.start)} até {fmtEventDate(ev.end)}</span>
+                <span>{st === "ativo" ? `Termina em ${fmtCountdown(Date.parse(ev.end) - now)}` : `Começa em ${fmtCountdown(Date.parse(ev.start) - now)}`}</span>
+              </div>
+              {st === "ativo" && (() => {
+                const pr = QuestTracker.progress(ev), goal = ev.objective.value, done = pr.value >= goal;
+                const claimed = acc.claims && acc.claims.has(ev.id);
+                return (
+                  <div className="gs-quest-progress">
+                    <div className="gs-progress"><div style={{ width: `${Math.min(100, (pr.value / goal) * 100)}%` }}/></div>
+                    <span className="gs-muted">{Math.min(pr.value, goal)} / {goal}</span>
+                    {claimed ? <span className="gs-pill is-done">✓ Reclamado</span>
+                      : done && acc.user ? <button className="gs-btn gs-btn-sm" disabled={busyId === ev.id} onClick={() => claim(ev)}>{busyId === ev.id ? "A validar…" : `Reclamar ${ev.points} pontos`}</button>
+                      : done ? <button className="gs-btn gs-btn-sm gs-btn-ghost" onClick={onLogin}>Entrar para reclamar</button>
+                      : null}
+                  </div>
+                );
+              })()}
+            </li>
+          );
+        })}
+      </ul>
+    </Panel>
+  );
+}
+
 function HelpPanel({ onClose }) {
   return (
-    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(4,4,16,.97)",
-      border: `1px solid ${N.magenta}44`, padding: "14px 18px", zIndex: 30, minWidth: 190 }}>
-      <div style={{ color: N.magenta, fontSize: 10, marginBottom: 8, letterSpacing: 3 }}>◈ CONTROLES</div>
-      {["↑ ↓ ← → / WASD — MOVER","[E] / ESPAÇO — INTERAGIR","[ESC] — FECHAR PAINEL"].map(s => (
-        <div key={s} style={{ fontSize: 9, color: N.textDim, letterSpacing: 1, lineHeight: 2 }}>{s}</div>
-      ))}
-      <div style={{ borderTop: `1px solid ${N.border}`, marginTop: 10, paddingTop: 10 }}>
-        {ZONES.map(z => (
-          <div key={z.id} style={{ fontSize: 8, color: z.color, letterSpacing: 1, lineHeight: 2 }}>
-            {z.glyph} {z.name}
-          </div>
-        ))}
-      </div>
-      <button onClick={onClose} style={{ marginTop: 8, background: "transparent",
-        border: `1px solid ${N.border}`, color: N.textDim, fontSize: 8,
-        cursor: "pointer", padding: "2px 8px", fontFamily: "'Courier New'" }}>FECHAR</button>
-    </div>
+    <Panel title="Como jogar" accent={N.gold} onClose={onClose}>
+      <ul className="gs-help">
+        <li><b>Clicar ou tocar no chão</b> para andar. Mantém premido para continuar a andar.</li>
+        <li><b>W A S D</b> ou <b>setas</b> também movem o herói.</li>
+        <li><b>Clicar num monstro</b> para atacar. <b>Espaço</b> ataca o mais próximo.</li>
+        <li><b>E</b> (ou o botão em baixo) para entrar em edifícios, descer escadas e usar portais.</li>
+        <li>O <b>ouro</b> e os <b>cristais</b> das masmorras servem para melhorar a ilha. Se morreres, perdes parte do que levavas.</li>
+        <li>As <b>peças</b> estão no <b>Mercado</b>. Os <b>eventos</b> estão no Quadro de Quests.</li>
+      </ul>
+    </Panel>
   );
 }
 
-// ── DPad (mobile) ─────────────────────────────────────────────────────────────
-function DPad({ onMove, onAction, hasZone }) {
-  const btns = [
-    [null, { l: "▲", dx: 0, dy: -1 }, null],
-    [{ l: "◄", dx: -1, dy: 0 }, { l: "●", act: true }, { l: "►", dx: 1, dy: 0 }],
-    [null, { l: "▼", dx: 0, dy: 1 }, null],
-  ];
+function DeathPanel({ info, onRespawn }) {
   return (
-    <div style={{ position: "absolute", bottom: 12, right: 12, display: "grid",
-      gridTemplateColumns: "42px 42px 42px", gridTemplateRows: "42px 42px 42px", gap: 3 }}>
-      {btns.map((row, ri) => row.map((b, ci) => b ? (
-        <button key={`${ri}${ci}`}
-          onPointerDown={() => b.act ? (hasZone && onAction()) : onMove(b.dx, b.dy)}
-          style={{ background: b.act ? `${N.magenta}22` : "rgba(4,4,16,.9)",
-            border: `2px solid ${b.act ? N.magenta : N.border}`,
-            color: b.act ? N.magenta : N.textDim,
-            fontSize: b.act ? 16 : 13, cursor: "pointer", fontFamily: "'Courier New'",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: b.act ? `0 0 8px ${N.magenta}44` : "none" }}>
-          {b.l}
-        </button>
-      ) : <div key={`${ri}${ci}`}/>))}
+    <div className="gs-overlay is-death">
+      <div className="gs-death">
+        <h2>Caíste no andar {info.floor}</h2>
+        <p>Perdeste <b>{info.lostGold} de ouro</b>{info.lostCrystals ? <> e <b>{info.lostCrystals} cristais</b></> : null}.</p>
+        <p className="gs-muted">Guardas {info.keptGold} de ouro e {info.keptCrystals} cristais. O Cofre reduz o que perdes.</p>
+        <button className="gs-btn" onClick={onRespawn} autoFocus>Voltar à ilha</button>
+      </div>
     </div>
   );
 }
 
-// ── PixelStore (componente raiz) ──────────────────────────────────────────────
+// ── HUD ───────────────────────────────────────────────────────────────────────
+function HpOrb({ hp, max }) {
+  const pct = Math.max(0, Math.min(1, hp / max));
+  return (
+    <div className="gs-orb" aria-label={`Vida ${hp} de ${max}`}>
+      <div className="gs-orb-fill" style={{ height: `${pct * 100}%` }}/>
+      <div className="gs-orb-text">{hp}<small>/{max}</small></div>
+    </div>
+  );
+}
+
+const ACTION_LABEL = {
+  mercado: "Entrar no Mercado", quests: "Ler o Quadro de Quests", forja: "Entrar na Forja",
+  altar: "Usar o Altar", farol: "Subir ao Farol", cofre: "Abrir o Cofre",
+  portal: "Descer às masmorras", stairs: "Descer as escadas", "portal-back": "Voltar à ilha",
+};
+
+function Hud({ s, cartCount, onAction, onCart, onHelp, onLeave, acc, onAccount }) {
+  const near = s.near === "portal" && s.scene === "dungeon" ? "portal-back" : s.near;
+  return (
+    <>
+      <div className="gs-hud-top">
+        <div className="gs-hud-left">
+          <button className="gs-icon-btn" onClick={onHelp} aria-label="Como jogar">?</button>
+          {s.scene === "dungeon"
+            ? <span className="gs-chip is-dungeon">Andar {s.floor} · {s.monstersLeft} monstros</span>
+            : <span className="gs-chip">Ilha: {ISLAND_STAGES[islandStage(Object.values(s.levels || {}).reduce((a, v) => a + v, 0))].name}{s.bestFloor ? ` · recorde: andar ${s.bestFloor}` : ""}</span>}
+        </div>
+        <div className="gs-hud-right">
+          {s.scene === "dungeon" && <button className="gs-btn gs-btn-ghost gs-btn-sm" onClick={onLeave}>🌀 Portal para a ilha</button>}
+          {acc.enabled && (
+            <button className="gs-btn gs-btn-sm gs-btn-ghost" onClick={onAccount}>
+              {acc.user ? <>⭐ {acc.points} pontos</> : <>👤 Entrar</>}
+            </button>
+          )}
+          <button className={`gs-btn gs-btn-sm ${cartCount ? "" : "gs-btn-ghost"}`} onClick={onCart}>🎒 Bolsa{cartCount ? ` (${cartCount})` : ""}</button>
+        </div>
+      </div>
+
+      <div className="gs-hud-bottom">
+        <HpOrb hp={s.hp} max={s.maxHp}/>
+        <div className="gs-hud-center">
+          {near && !s.dead ? (
+            <button className="gs-btn gs-action" onClick={onAction}>{ACTION_LABEL[near]} <kbd>E</kbd></button>
+          ) : (
+            <span className="gs-hint">{s.scene === "dungeon" ? "Clica num monstro para atacar" : "Clica no chão para andar"}</span>
+          )}
+        </div>
+        <div className="gs-res">
+          <div className="gs-res-row"><span>🪙</span><b>{s.gold}</b><small>ouro</small></div>
+          <div className="gs-res-row"><span>💎</span><b>{s.crystals}</b><small>cristais</small></div>
+          {s.scene === "dungeon" && (
+            <div className="gs-res-run">A levar: <b>+{s.runGold}</b> 🪙 {s.runCrystals ? <> <b>+{s.runCrystals}</b> 💎</> : null}</div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Componente raiz ───────────────────────────────────────────────────────────
 function PixelStore() {
-  const canvasRef   = useRef(null);
-  const engineRef   = useRef(null);
+  const canvasRef = useRef(null);
+  const engineRef = useRef(null);
+  const [s, setS] = useState({ scene: "island", hp: HERO.baseHp, maxHp: HERO.baseHp, gold: 0, crystals: 0, runGold: 0, runCrystals: 0, floor: 0, bestFloor: 0, levels: {}, near: null, monstersLeft: 0 });
+  const [open, setOpen] = useState(null);   // id do painel aberto
+  const [death, setDeath] = useState(null);
+  const [toast, setToast] = useState(null);
+  const [cart, setCart] = useState(() => { try { return JSON.parse(safeGet(CART_KEY)) || []; } catch (_) { return []; } });
+  const [showHint, setShowHint] = useState(() => !safeGet(HINT_KEY));
 
-  const [player,     setPlayer]     = useState(PLAYER_START);
-  const [activeZone, setActiveZone] = useState(null);
-  const [openZone,   setOpenZone]   = useState(null);
-  const [cart,       setCart]       = useState([]);
-  const [cartOpen,   setCartOpen]   = useState(false);
-  const [notif,      setNotif]      = useState(null);
-  const [intro,      setIntro]      = useState(true);
-  const [showHelp,   setShowHelp]   = useState(false);
-  const [chestAnim,  setChestAnim]  = useState(false);
-  const [canvasSize, setCanvasSize] = useState({ w: VIEW_COLS * TILE, h: VIEW_ROWS * TILE });
-
-  // canvas responsivo
-  useEffect(() => {
-    const calc = () => {
-      const navH   = document.getElementById("site-nav")?.offsetHeight  || 54;
-      const footH  = document.getElementById("site-footer")?.offsetHeight || 26;
-      const hudH   = 38;
-      const availH = window.innerHeight - navH - footH - hudH;
-      const availW = window.innerWidth;
-      const scale  = Math.min(availW / (VIEW_COLS * TILE), availH / (VIEW_ROWS * TILE), 1);
-      setCanvasSize({ w: Math.floor(VIEW_COLS * TILE * scale), h: Math.floor(VIEW_ROWS * TILE * scale) });
-    };
-    calc();
-    window.addEventListener("resize", calc);
-    return () => window.removeEventListener("resize", calc);
+  const notify = useCallback((msg, col = N.gold) => {
+    setToast({ msg, col, id: Math.random() });
   }, []);
+  useEffect(() => { if (!toast) return; const id = setTimeout(() => setToast(null), 3200); return () => clearTimeout(id); }, [toast]);
 
-  // inicia o engine após o canvas estar montado
+  useEffect(() => { safeSet(CART_KEY, JSON.stringify(cart)); }, [cart]);
+
   useEffect(() => {
-    if (!canvasRef.current) return;
     const engine = createGameEngine(canvasRef.current, {
-      onZoneChange: zone => setActiveZone(zone),
-      onPlayerMove: pos  => setPlayer(pos),
+      onState: setS,
+      onToast: notify,
+      onOpenBuilding: b => setOpen(b.id),
+      onDeath: info => setDeath(info),
     });
     engineRef.current = engine;
     engine.start();
     return () => engine.destroy();
-  }, []);
-
-  // pausa o loop quando modal está aberto
-  useEffect(() => {
-    engineRef.current?.setPaused(!!openZone || cartOpen);
-  }, [openZone, cartOpen]);
-
-  // teclado global (interação e ESC)
-  useEffect(() => {
-    const dn = e => {
-      if ((e.key === "e" || e.key === "E" || e.key === " ") && activeZone && !openZone) {
-        e.preventDefault();
-        openShop(activeZone);
-      }
-      if (e.key === "Escape") { setOpenZone(null); setCartOpen(false); }
-    };
-    window.addEventListener("keydown", dn);
-    return () => window.removeEventListener("keydown", dn);
-  }, [activeZone, openZone]);
-
-  const notify = useCallback((msg, col = N.magenta) => {
-    setNotif({ msg, col });
-    setTimeout(() => setNotif(null), 2800);
-  }, []);
-
-  const openShop = zone => {
-    if (zone.id === "vip") { setChestAnim(true); setTimeout(() => setChestAnim(false), 700); }
-    setOpenZone(zone);
-  };
-
-  const addToCart = useCallback((item, qty = 1) => {
-    const entries = Array.from({ length: qty }, () => ({ ...item, uid: Date.now() + Math.random() }));
-    setCart(c => [...c, ...entries]);
-    spawnParticles(VIEW_COLS * TILE / 2, VIEW_ROWS * TILE / 2, N.green, 22);
-    notify(`${item.emoji} ×${qty} ${item.name} adicionado!`, N.green);
   }, [notify]);
 
-  const totalItems = cart.length;
-  const totalPrice = cart.reduce((s, i) => s + (i.price || 0), 0);
+  useEffect(() => { engineRef.current?.setPaused(!!open || !!death); }, [open, death]);
+
+  useEffect(() => {
+    if (!showHint) return;
+    const id = setTimeout(() => { setShowHint(false); safeSet(HINT_KEY, "1"); }, 12000);
+    return () => clearTimeout(id);
+  }, [showHint]);
+
+  const addToCart = (p, qty) => {
+    setCart(c => {
+      const ex = c.find(i => i.name === p.name);
+      if (ex) return c.map(i => i.name === p.name ? { ...i, qty: Math.min(p.stock, i.qty + qty) } : i);
+      return [...c, { name: p.name, price: p.price, emoji: p.emoji, stock: p.stock, qty }];
+    });
+    notify(`${p.emoji} ${p.name} ×${qty} na bolsa`, N.green);
+  };
+  const changeQty = (name, q) => setCart(c => q <= 0 ? c.filter(i => i.name !== name) : c.map(i => i.name === name ? { ...i, qty: q } : i));
+  const cartCount = cart.reduce((n, i) => n + i.qty, 0);
+
+  const doUpgrade = id => {
+    if (engineRef.current?.upgrade(id)) {
+      const b = BUILDINGS.find(x => x.id === id);
+      notify(`${b.name} melhorado!`, b.color);
+    }
+  };
+
+  const acc = useAccount();
+  const building = BUILDINGS.find(b => b.id === open);
+  const close = () => setOpen(null);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: N.bg }}>
+    <div className="gs-root">
+      <EventBanner onOpenQuests={() => setOpen("quests")}/>
+      <div className="gs-stage">
+        <canvas ref={canvasRef} className="gs-canvas" aria-label="Jogo da loja Geekonverse"/>
+        <Hud s={s} cartCount={cartCount}
+          onAction={() => engineRef.current?.interact()}
+          onCart={() => setOpen("cart")}
+          onHelp={() => setOpen("help")}
+          onLeave={() => engineRef.current?.leaveDungeon()}
+          acc={acc} onAccount={() => setOpen("account")}/>
 
-      {/* HUD */}
-      <div style={{ background: N.panel, borderBottom: `1px solid ${N.magenta}33`,
-        padding: "0 16px", display: "flex", alignItems: "center",
-        justifyContent: "space-between", height: 38, flexShrink: 0 }}>
-        <div style={{ display: "flex", gap: 16, fontSize: 9, letterSpacing: 2, alignItems: "center" }}>
-          <span style={{ color: N.magenta }}>HP <span style={{ letterSpacing: 0 }}>████████░░</span></span>
-          <span style={{ color: N.cyan }}>MP <span style={{ letterSpacing: 0 }}>██████░░░░</span></span>
-          <span style={{ color: N.yellow }}>XP {cart.length * 100}</span>
-          <span style={{ color: N.textDim }}>LVL 1 SHOPPER</span>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          {activeZone && (
-            <span style={{ fontSize: 9, color: activeZone.color, letterSpacing: 1 }}>◉ {activeZone.name}</span>
-          )}
-          <button onClick={() => setShowHelp(h => !h)}
-            style={{ background: "transparent", border: `1px solid ${N.border}`,
-              color: N.textDim, padding: "3px 8px", cursor: "pointer",
-              fontSize: 9, fontFamily: "'Courier New'" }}>?</button>
-          <button onClick={() => setCartOpen(true)} style={{
-            background: totalItems > 0 ? `${N.magenta}18` : "transparent",
-            border: `2px solid ${totalItems > 0 ? N.magenta : N.border}`,
-            color: totalItems > 0 ? N.magenta : N.textDim,
-            padding: "4px 14px", cursor: "pointer", fontSize: 10,
-            letterSpacing: 1, fontFamily: "'Courier New'",
-            boxShadow: totalItems > 0 ? `0 0 10px ${N.magenta}44` : "none" }}>
-            🛒{totalItems > 0 ? ` (${totalItems})` : " BOLSA"}
-          </button>
-        </div>
+        {toast && <div key={toast.id} className="gs-toast" style={{ "--accent": toast.col }}>{toast.msg}</div>}
+
+        {showHint && (
+          <div className="gs-firsthint">
+            <span>Clica no chão para andar · <kbd>E</kbd> para entrar nos edifícios · as peças estão no <b>Mercado</b></span>
+            <button onClick={() => { setShowHint(false); safeSet(HINT_KEY, "1"); }} aria-label="Fechar dica">×</button>
+          </div>
+        )}
       </div>
 
-      {/* Canvas */}
-      <div style={{ position: "relative", flex: 1, display: "flex",
-        alignItems: "center", justifyContent: "center", background: N.bg }}>
-        <canvas ref={canvasRef}
-          width={VIEW_COLS * TILE} height={VIEW_ROWS * TILE}
-          style={{ width: canvasSize.w, height: canvasSize.h,
-            imageRendering: "pixelated", cursor: "none" }}/>
-
-        {/* toast */}
-        {notif && (
-          <div className="anim-toast" style={{ position: "absolute", top: 12, left: "50%",
-            transform: "translateX(-50%)", background: N.panel,
-            border: `2px solid ${notif.col}`, padding: "8px 20px",
-            fontSize: 11, color: notif.col, letterSpacing: 1,
-            boxShadow: `0 0 24px ${notif.col}66`, whiteSpace: "nowrap",
-            zIndex: 20, pointerEvents: "none" }}>{notif.msg}</div>
-        )}
-
-        {chestAnim && (
-          <div className="anim-chest" style={{ position: "absolute", inset: 0,
-            background: `${N.yellow}22`, pointerEvents: "none", zIndex: 5,
-            boxShadow: `inset 0 0 80px ${N.yellow}88` }}/>
-        )}
-
-        {showHelp && <HelpPanel onClose={() => setShowHelp(false)}/>}
-
-        <DPad
-          onMove={(dx, dy) => engineRef.current?.moveBy(dx, dy)}
-          onAction={() => activeZone && openShop(activeZone)}
-          hasZone={!!activeZone}/>
-      </div>
-
-      {/* Modais */}
-      {openZone && (
-        <ShopModal
-          zone={openZone}
-          onClose={() => setOpenZone(null)}
-          onAddToCart={(item, qty) => { addToCart(item, qty); }}/>
-      )}
-      {cartOpen && (
-        <CartModal
-          cart={cart}
-          onClose={() => setCartOpen(false)}
-          onRemove={uid => setCart(c => c.filter(i => i.uid !== uid))}
-          onClear={() => setCart([])}/>
-      )}
-      {intro && <IntroModal onStart={() => setIntro(false)}/>}
+      {open === "mercado" && <MarketPanel onClose={close} onAdd={addToCart} cartCount={cartCount} onOpenCart={() => setOpen("cart")}/>}
+      {open === "cart" && <CartPanel cart={cart} onClose={close} onChange={changeQty} onClear={() => setCart([])}/>}
+      {open === "quests" && <QuestPanel onClose={close} acc={acc} onLogin={() => setOpen("account")} notify={notify}/>}
+      {open === "account" && <AccountPanel acc={acc} onClose={close} notify={notify}/>}
+      {open === "help" && <HelpPanel onClose={close}/>}
+      {building && building.upgrade && <UpgradePanel b={building} state={s} onUpgrade={doUpgrade} onClose={close}/>}
+      {death && <DeathPanel info={death} onRespawn={() => { setDeath(null); engineRef.current?.respawn(); }}/>}
     </div>
   );
 }
