@@ -39,10 +39,12 @@ Deno.serve(async (req) => {
   const { data: order } = await admin.from("orders").select("id,status,user_id,points_used").eq("id", orderId).maybeSingle();
   if (!order) return new Response("encomenda desconhecida", { status: 200 });
 
+  // Versões recentes da API da Stripe movem a morada para "collected_information".
+  const ship = session.collected_information?.shipping_details ?? session.shipping_details ?? null;
   const details = {
     customer_email: session.customer_details?.email ?? null,
-    customer_name: session.customer_details?.name ?? session.shipping_details?.name ?? null,
-    shipping_address: session.shipping_details?.address ?? session.customer_details?.address ?? null,
+    customer_name: ship?.name ?? session.customer_details?.name ?? null,
+    shipping_address: ship?.address ?? session.customer_details?.address ?? null,
   };
 
   const markPaid = async () => {

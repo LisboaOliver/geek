@@ -16,7 +16,7 @@ Comece sempre em **modo de teste** da Stripe: nada é cobrado a sério até muda
 4. **Developers → API keys**: vai precisar da **Secret key** (`sk_test_...`) no passo 4. Não a copie para mais lado nenhum.
 
 ## 2. Base de dados
-Supabase → **SQL Editor → New query** → cole o ficheiro `supabase/payments.sql` → **Run**.
+Supabase → **SQL Editor → New query** → cole o ficheiro `supabase/migrations/20261006120100_pagamentos.sql` → **Run**.
 
 Isto cria:
 - `products` — **preço e stock oficiais** (é aqui que se mudam preços; o site atualiza sozinho);
@@ -31,7 +31,9 @@ Supabase → **Edge Functions → Deploy a new function → Via Editor**.
 | `checkout` | `supabase/functions/checkout/index.ts` |
 | `stripe-webhook` | `supabase/functions/stripe-webhook/index.ts` |
 
-Em **cada uma**, depois de criada: **Details / Settings → "Verify JWT with legacy secret" / "Enforce JWT verification" → DESLIGADO** → Save.
+(Ou, pela CLI: `npm run functions:deploy` — o `config.toml` já desliga o JWT nas duas.)
+
+Em **cada uma**, depois de criada pelo editor: **Details / Settings → "Verify JWT with legacy secret" / "Enforce JWT verification" → DESLIGADO** → Save.
 (A `checkout` valida a conta por dentro; a `stripe-webhook` é chamada pela Stripe e valida a assinatura.)
 
 ## 4. Segredos

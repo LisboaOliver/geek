@@ -83,7 +83,7 @@ A loja é um jogo em vista isométrica: uma ilha base sobre um peixe gigante e m
 
 - **Produtos e preços:** `js/constants.js`, lista `PRODUCTS` (preços em euros). Peças da TeePublic/Redbubble usam o campo `external` com o link da sua página.
 - **Eventos e mini quests:** criam-se no Supabase, tabela `events` (ver `supabase/GUIA.md`). `js/events.js` fica como reserva. O evento ativo aparece na faixa do topo da loja.
-- **Contas e pontos de promoção:** Supabase (login por link mágico). Configuração em `supabase/GUIA.md`, base de dados em `supabase/schema.sql`, código em `js/account.js`.
+- **Contas e pontos de promoção:** Supabase (login por link mágico). Configuração em `supabase/GUIA.md`, base de dados em `supabase/migrations/`, código em `js/account.js`.
 - **Envio:** `FREE_SHIPPING_FROM` e `SHIPPING_COST` em `js/constants.js`.
 - **Edifícios, monstros e saque:** também em `js/constants.js`.
 - **Aspeto e fases dos edifícios (nível 0 a 5) e crescimento da ilha:** `js/buildings.js` (nomes das fases em `BUILDING_STAGES`).

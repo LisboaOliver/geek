@@ -1,0 +1,25 @@
+{
+  "name": "geekonverse",
+  "version": "1.0.0",
+  "description": "Geekonverse — site e loja (Supabase)",
+  "scripts": {
+    "supabase": "supabase",
+    "db:push": "supabase db push",
+    "functions:deploy": "supabase functions deploy checkout && supabase functions deploy stripe-webhook"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LisboaOliver/geek.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LisboaOliver/geek/issues"
+  },
+  "homepage": "https://github.com/LisboaOliver/geek#readme",
+  "devDependencies": {
+    "supabase": "2.119.0"
+  },
+  "private": true
+}
