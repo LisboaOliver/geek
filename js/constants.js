@@ -73,19 +73,19 @@ const HERO = {
 // upgrade: o que cada nível melhora (null = não evolui)
 const MAX_LEVEL = 5;
 const BUILDINGS = [
-  { id: "mercado", name: "Mercado",            glyph: "🛒", tx: 5,  ty: 5,  w: 3, h: 2, color: "#e0379a", roof: "#8c1f5e",
+  { id: "mercado", name: "Mercado",            glyph: "🛒", tx: 7,  ty: 11,  w: 3, h: 2, color: "#e0379a", roof: "#8c1f5e",
     desc: "As peças da Geekonverse. Aqui fazes compras.", upgrade: null },
-  { id: "quests",  name: "Quadro de Quests",   glyph: "📜", tx: 12, ty: 6,  w: 1, h: 1, color: "#d8a94a", roof: "#6b4a1e",
+  { id: "quests",  name: "Quadro de Quests",   glyph: "📜", tx: 13, ty: 4,   w: 1, h: 1, color: "#d8a94a", roof: "#6b4a1e",
     desc: "Eventos com dia e hora marcados.", upgrade: null },
-  { id: "forja",   name: "Forja",              glyph: "⚒️", tx: 3,  ty: 10, w: 2, h: 2, color: "#d0843c", roof: "#5a2f17",
+  { id: "forja",   name: "Forja",              glyph: "⚒️", tx: 2,  ty: 9,  w: 2, h: 2, color: "#d0843c", roof: "#5a2f17",
     desc: "Mais dano em cada golpe.", upgrade: { stat: "dano", per: 3, unit: "de dano" } },
-  { id: "altar",   name: "Altar de Sangue",    glyph: "🩸", tx: 15, ty: 9,  w: 2, h: 2, color: "#b3202c", roof: "#4a0d14",
+  { id: "altar",   name: "Altar de Sangue",    glyph: "🩸", tx: 16, ty: 10,  w: 2, h: 2, color: "#b3202c", roof: "#4a0d14",
     desc: "Mais vida máxima.", upgrade: { stat: "vida", per: 15, unit: "de vida" } },
-  { id: "farol",   name: "Farol",              glyph: "🔦", tx: 13, ty: 3,  w: 1, h: 1, color: "#f2d24b", roof: "#6b5a12",
+  { id: "farol",   name: "Farol",              glyph: "🔦", tx: 5,  ty: 16,  w: 1, h: 1, color: "#f2d24b", roof: "#6b5a12",
     desc: "A tua luz vai mais longe na masmorra.", upgrade: { stat: "luz", per: 0.8, unit: "de raio de luz" } },
-  { id: "cofre",   name: "Cofre",              glyph: "💰", tx: 7,  ty: 11, w: 2, h: 1, color: "#6f8cff", roof: "#25306b",
+  { id: "cofre",   name: "Cofre",              glyph: "💰", tx: 5,  ty: 3,  w: 2, h: 1, color: "#6f8cff", roof: "#25306b",
     desc: "Mais ouro por monstro e perdes menos ao morrer.", upgrade: { stat: "ouro", per: 10, unit: "% de ouro" } },
-  { id: "portal",  name: "Portal da Masmorra", glyph: "🌀", tx: 9,  ty: 8,  w: 2, h: 2, color: "#9b5cff", roof: "#2b1a4a",
+  { id: "portal",  name: "Portal da Masmorra", glyph: "🌀", tx: 12, ty: 10,  w: 2, h: 2, color: "#9b5cff", roof: "#2b1a4a",
     desc: "Desce às masmorras para juntar ouro e cristais.", upgrade: null },
 ];
 
@@ -100,8 +100,12 @@ function upgradeCost(lvl) {
 // ── Grelha da ilha ────────────────────────────────────────────────────────────
 // 0 = mar · 1 = relva · 2 = caminho de terra · 3 = areia (margem)
 const ISLAND_SIZE = 20;
-const ISLAND_START = { x: 10.5, y: 13.5 };
+// O visitante aparece entre o Mercado e o Portal, a um passo de cada porta.
+const ISLAND_START = { x: 10.75, y: 13.1 };
 const ISLAND_HUB = { x: 10, y: 13 };
+// Edifícios que abrem com um clique logo à chegada (sem andar até à porta)
+const QUICK_ENTRY = ["mercado", "portal"];
+const QUICK_ENTRY_RANGE = 3;
 
 // ── Loja ──────────────────────────────────────────────────────────────────────
 const CURRENCY = "€";

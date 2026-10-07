@@ -151,7 +151,7 @@ function createGameEngine(canvas, cb) {
     scene = "island"; dungeon = null; loot = []; floaters = [];
     resize();
     run = { gold: 0, crystals: 0, floor: 0, kills: 0 };
-    hero.x = 10; hero.y = 11.2; hero.path = []; hero.target = null; hero.pendingBuilding = null;
+    hero.x = ISLAND_START.x; hero.y = ISLAND_START.y; hero.path = []; hero.target = null; hero.pendingBuilding = null;
     hero.hp = heroStats(save).maxHp;
     snapCamera();
   }
@@ -284,6 +284,13 @@ function createGameEngine(canvas, cb) {
       const d = buildingDoor(hoverBuilding);
       hero.target = null;
       if (dist(hero, d) < 1.3) { hero.pendingBuilding = null; interact(); return; }
+      // Mercado e Portal ficam ao lado de onde o visitante aparece: um clique
+      // por perto entra logo, sem esperar que o herói ande até à porta.
+      if (QUICK_ENTRY.includes(hoverBuilding.id) && dist(hero, d) < QUICK_ENTRY_RANGE) {
+        hero.pendingBuilding = null; hero.path = [];
+        if (hoverBuilding.id === "portal") enterDungeon(); else cb.onOpenBuilding?.(hoverBuilding);
+        return;
+      }
       hero.pendingBuilding = hoverBuilding;
       pathTo(d.x, d.y);
       return;
