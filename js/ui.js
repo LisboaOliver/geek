@@ -117,7 +117,7 @@ function MarketPanel({ onClose, onAdd, cartCount, onOpenCart }) {
         <button className="gs-btn" onClick={onOpenCart}>Ver bolsa{cartCount ? ` (${cartCount})` : ""}</button>
       </>}>
       <div className="gs-tabs" role="tablist">
-        {[["todas", "Todas"], ["oficiais", "Peças oficiais"], ["externas", "TeePublic e Redbubble"]].map(([id, label]) => (
+        {[["todas", "Todas"], ["oficiais", "Peças oficiais"], ["externas", "TeePublic e Amazon"]].map(([id, label]) => (
           <button key={id} role="tab" aria-selected={filter === id} className={filter === id ? "is-on" : ""} onClick={() => setFilter(id)}>{label}</button>
         ))}
       </div>

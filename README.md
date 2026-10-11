@@ -81,7 +81,7 @@ git clone https://github.com/seu-usuario/seu-repositorio.git
 
 A loja é um jogo em vista isométrica: uma ilha base sobre um peixe gigante e masmorras ao estilo Diablo.
 
-- **Produtos e preços:** `js/constants.js`, lista `PRODUCTS` (preços em euros). Peças da TeePublic/Redbubble usam o campo `external` com o link da sua página.
+- **Produtos e preços:** `js/constants.js`, lista `PRODUCTS` (preços em euros). Peças da TeePublic e da Amazon usam o campo `external` com o link da sua página.
 - **Eventos e mini quests:** criam-se no Supabase, tabela `events` (ver `supabase/GUIA.md`). `js/events.js` fica como reserva. O evento ativo aparece na faixa do topo da loja.
 - **Contas e pontos de promoção:** Supabase (login por link mágico). Configuração em `supabase/GUIA.md`, base de dados em `supabase/schema.sql`, código em `js/account.js`.
 - **Envio:** `FREE_SHIPPING_FROM` e `SHIPPING_COST` em `js/constants.js`.

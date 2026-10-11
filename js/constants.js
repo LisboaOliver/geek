@@ -122,7 +122,7 @@ const POINTS_MAX_SHARE = 0.20;                  // desconto máximo com pontos: 
 //   id (igual ao da tabela products no Supabase), name, price (€), old (preço antigo ou null), badge, emoji, desc, stock, tags
 //   image     — (opcional) caminho de uma imagem, ex: "assests/produtos/camiseta.png"
 //   official  — true = peça própria Geekonverse (vai ao carrinho, envio manual)
-//   external  — para peças da TeePublic ou Redbubble: { platform: "TeePublic", url: "https://..." }
+//   external  — para peças da TeePublic ou da Amazon: { platform: "TeePublic", url: "https://..." }
 //               (estas abrem a página da plataforma, não entram no carrinho)
 const PRODUCTS = [
   { id: "one-piece-especial", name: "Camiseta One Piece Ed. Especial", price: 34.90, old: null,  badge: "NOVO",   emoji: "🏴‍☠️", desc: "Edição limitada em silk premium, 100% algodão.",   stock: 12, tags: ["anime", "manga"],  official: true },
@@ -136,8 +136,18 @@ const PRODUCTS = [
   // Exemplos de peças externas — troque os URLs pelos das suas páginas:
   { id: "ext-teepublic", name: "Coleção Geekonverse na TeePublic", price: null, old: null, badge: "TEEPUBLIC", emoji: "👕", desc: "Designs Geekonverse impressos e enviados pela TeePublic.", stock: null, tags: ["externo"],
     external: { platform: "TeePublic", url: "https://www.teepublic.com/" } },
-  { id: "ext-redbubble", name: "Coleção Geekonverse na Redbubble", price: null, old: null, badge: "REDBUBBLE", emoji: "🎨", desc: "Autocolantes, posters e mais, enviados pela Redbubble.", stock: null, tags: ["externo"],
-    external: { platform: "Redbubble", url: "https://www.redbubble.com/" } },
+  { id: "ext-train-art", name: "Camiseta Geek on Verse Train Art", price: null, old: null, badge: "TEEPUBLIC", emoji: "🚂", desc: "Um monstro da Geekonverse viaja de comboio. O que esperar da próxima paragem?", stock: null, tags: ["externo"],
+    image: "https://images.teepublic.com/derived/production/designs/95153029_1/1783019211/i_p:c_191919,bnr_1,bps_fr,s_630,q_90.jpg",
+    external: { platform: "TeePublic", url: "https://www.teepublic.com/t-shirt/95153029-geek-on-verse-train-art?store_id=4538284" } },
+  { id: "ext-samurai-hoodie", name: "Hoodie Samurai", price: null, old: null, badge: "TEEPUBLIC", emoji: "🥷", desc: "Um samurai da Geekonverse, em hoodie com capuz.", stock: null, tags: ["externo"],
+    image: "https://images.teepublic.com/derived/production/designs/95150744_0/1783014736/i_p:c_191919,bnr_1,s_630,q_90.jpg",
+    external: { platform: "TeePublic", url: "https://www.teepublic.com/hoodie/95150744-samurai-hoodie" } },
+  { id: "ext-samurai-geek", name: "Camiseta Samurai Geek", price: null, old: null, badge: "TEEPUBLIC", emoji: "⚔️", desc: "Um samurai da Geekonverse, em t-shirt.", stock: null, tags: ["externo"],
+    image: "https://images.teepublic.com/derived/production/designs/95149634_1/1783013452/i_p:c_191919,bnr_1,bps_fr,s_630,q_90.jpg",
+    external: { platform: "TeePublic", url: "https://www.teepublic.com/t-shirt/95149634-samurai-geek?store_id=4538284" } },
+  { id: "ext-livro-grafiteiro-glitch", name: "Grafiteiro & Glitch: Livro para colorir", price: null, old: null, badge: "LIVRO", emoji: "🖍️", desc: "64 páginas de pintura e grafite no universo d'O Grafiteiro. Dos 10 aos 17 anos.", stock: null, tags: ["externo", "livro"],
+    image: "https://m.media-amazon.com/images/I/81IrQ7FweyL._SY342_.jpg",
+    external: { platform: "Amazon", url: "https://www.amazon.es/dp/B0HMMD63V9" } },
 ];
 
 // ── Gravação local ────────────────────────────────────────────────────────────
