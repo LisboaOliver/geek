@@ -96,14 +96,10 @@ grant execute on function public.reserve_points(uuid, integer) to service_role;
 grant execute on function public.refund_points(uuid, integer) to service_role;
 grant execute on function public.decrement_stock(uuid) to service_role;
 
--- ── Produtos atuais da loja (edite preços e stock no Table Editor) ──────────
-insert into public.products (id, name, price_cents, old_cents, stock) values
-  ('one-piece-especial',      'Camiseta One Piece Ed. Especial', 3490, null, 12),
-  ('moletom-attack-on-titan', 'Moletom Attack on Titan',         4990, null, 8),
-  ('hoodie-cyberpunk',        'Hoodie Cyberpunk',                5490, null, 5),
-  ('camiseta-ghibli',         'Camiseta Studio Ghibli',          2990, null, 20),
-  ('camiseta-dragon-ball',    'Camiseta Dragon Ball',            1990, 2790, 15),
-  ('bone-demon-slayer',       'Boné Demon Slayer',               1490, 1990, 22),
-  ('camiseta-zelda',          'Camiseta Zelda',                  3290, null, 9),
-  ('conjunto-evangelion',     'Conjunto Evangelion',             6990, null, 4)
-on conflict (id) do nothing;
+-- ── Produtos da loja (edite preços e stock no Table Editor) ────────────────
+-- De momento não há peças oficiais à venda: o Mercado só mostra peças externas
+-- (TeePublic e Amazon), que não passam por aqui. Para pôr uma peça oficial à venda,
+-- adicione-a a PRODUCTS em js/constants.js e insira-a aqui com o mesmo id, por exemplo:
+-- insert into public.products (id, name, price_cents, old_cents, stock) values
+--   ('id-da-peca', 'Nome da peça', 2990, null, 10)
+-- on conflict (id) do nothing;

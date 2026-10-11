@@ -125,14 +125,6 @@ const POINTS_MAX_SHARE = 0.20;                  // desconto máximo com pontos: 
 //   external  — para peças da TeePublic ou da Amazon: { platform: "TeePublic", url: "https://..." }
 //               (estas abrem a página da plataforma, não entram no carrinho)
 const PRODUCTS = [
-  { id: "one-piece-especial", name: "Camiseta One Piece Ed. Especial", price: 34.90, old: null,  badge: "NOVO",   emoji: "🏴‍☠️", desc: "Edição limitada em silk premium, 100% algodão.",   stock: 12, tags: ["anime", "manga"],  official: true },
-  { id: "moletom-attack-on-titan", name: "Moletom Attack on Titan",         price: 49.90, old: null,  badge: "DROP",   emoji: "⚔️",  desc: "Survey Corps, algodão 380g com capuz duplo.",     stock: 8,  tags: ["anime"],           official: true },
-  { id: "hoodie-cyberpunk", name: "Hoodie Cyberpunk",                price: 54.90, old: null,  badge: "RARO",   emoji: "🤖",  desc: "Arte de Night City, peça exclusiva.",           stock: 5,  tags: ["games", "neon"],   official: true },
-  { id: "camiseta-ghibli", name: "Camiseta Studio Ghibli",          price: 29.90, old: null,  badge: "NOVO",   emoji: "🌿",  desc: "Totoro em impressão DTF de toque aveludado.",    stock: 20, tags: ["anime", "kawaii"], official: true },
-  { id: "camiseta-dragon-ball", name: "Camiseta Dragon Ball",            price: 19.90, old: 27.90, badge: "-29%",   emoji: "🐉",  desc: "Goku Ultra Instinct em silk plastisol.",          stock: 15, tags: ["anime", "clássico"], official: true },
-  { id: "bone-demon-slayer", name: "Boné Demon Slayer",               price: 14.90, old: 19.90, badge: "-25%",   emoji: "🗡️",  desc: "Bordado 3D do Tanjiro, snapback.",               stock: 22, tags: ["anime", "acessório"], official: true },
-  { id: "camiseta-zelda", name: "Camiseta Zelda",                  price: 32.90, old: null,  badge: "#1",     emoji: "🛡️",  desc: "Arte exclusiva, corte oversize.",                stock: 9,  tags: ["games"],           official: true },
-  { id: "conjunto-evangelion", name: "Conjunto Evangelion",             price: 69.90, old: null,  badge: "ÚNICO",  emoji: "🦾",  desc: "Kit numerado, edição de colecionador.",          stock: 4,  tags: ["anime", "collab"], official: true },
   // Peças externas (abrem a página da plataforma):
   { id: "ext-train-art", name: "Camiseta Geek on Verse Train Art", price: null, old: null, badge: "TEEPUBLIC", emoji: "🚂", desc: "Um monstro da Geekonverse viaja de comboio. O que esperar da próxima paragem?", stock: null, tags: ["externo"],
     image: "https://images.teepublic.com/derived/production/designs/95153029_1/1783019211/i_p:c_191919,bnr_1,bps_fr,s_630,q_90.jpg",

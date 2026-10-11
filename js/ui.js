@@ -109,18 +109,20 @@ function ProductCard({ p, onAdd }) {
 
 function MarketPanel({ onClose, onAdd, cartCount, onOpenCart }) {
   const [filter, setFilter] = useState("todas");
-  const list = PRODUCTS.filter(p => filter === "todas" ? true : filter === "oficiais" ? !p.external : !!p.external);
+  // Sem peças oficiais à venda, não há separadores nem bolsa: só as peças externas.
+  const hasOfficial = PRODUCTS.some(p => !p.external);
+  const list = PRODUCTS.filter(p => !hasOfficial || filter === "todas" ? true : filter === "oficiais" ? !p.external : !!p.external);
   return (
     <Panel title="🛒 Mercado" accent={N.magenta} onClose={onClose} wide
-      footer={<>
+      footer={hasOfficial ? <>
         <span className="gs-muted">Envio para Portugal e Espanha. Peças externas são vendidas pela própria plataforma.</span>
         <button className="gs-btn" onClick={onOpenCart}>Ver bolsa{cartCount ? ` (${cartCount})` : ""}</button>
-      </>}>
-      <div className="gs-tabs" role="tablist">
+      </> : <span className="gs-muted">Cada peça é vendida e enviada pela própria plataforma (TeePublic ou Amazon).</span>}>
+      {hasOfficial && <div className="gs-tabs" role="tablist">
         {[["todas", "Todas"], ["oficiais", "Peças oficiais"], ["externas", "TeePublic e Amazon"]].map(([id, label]) => (
           <button key={id} role="tab" aria-selected={filter === id} className={filter === id ? "is-on" : ""} onClick={() => setFilter(id)}>{label}</button>
         ))}
-      </div>
+      </div>}
       <div className="gs-grid">
         {list.map(p => <ProductCard key={p.name} p={p} onAdd={onAdd}/>)}
       </div>
