@@ -133,9 +133,7 @@ const PRODUCTS = [
   { id: "bone-demon-slayer", name: "Boné Demon Slayer",               price: 14.90, old: 19.90, badge: "-25%",   emoji: "🗡️",  desc: "Bordado 3D do Tanjiro, snapback.",               stock: 22, tags: ["anime", "acessório"], official: true },
   { id: "camiseta-zelda", name: "Camiseta Zelda",                  price: 32.90, old: null,  badge: "#1",     emoji: "🛡️",  desc: "Arte exclusiva, corte oversize.",                stock: 9,  tags: ["games"],           official: true },
   { id: "conjunto-evangelion", name: "Conjunto Evangelion",             price: 69.90, old: null,  badge: "ÚNICO",  emoji: "🦾",  desc: "Kit numerado, edição de colecionador.",          stock: 4,  tags: ["anime", "collab"], official: true },
-  // Exemplos de peças externas — troque os URLs pelos das suas páginas:
-  { id: "ext-teepublic", name: "Coleção Geekonverse na TeePublic", price: null, old: null, badge: "TEEPUBLIC", emoji: "👕", desc: "Designs Geekonverse impressos e enviados pela TeePublic.", stock: null, tags: ["externo"],
-    external: { platform: "TeePublic", url: "https://www.teepublic.com/" } },
+  // Peças externas (abrem a página da plataforma):
   { id: "ext-train-art", name: "Camiseta Geek on Verse Train Art", price: null, old: null, badge: "TEEPUBLIC", emoji: "🚂", desc: "Um monstro da Geekonverse viaja de comboio. O que esperar da próxima paragem?", stock: null, tags: ["externo"],
     image: "https://images.teepublic.com/derived/production/designs/95153029_1/1783019211/i_p:c_191919,bnr_1,bps_fr,s_630,q_90.jpg",
     external: { platform: "TeePublic", url: "https://www.teepublic.com/t-shirt/95153029-geek-on-verse-train-art?store_id=4538284" } },
