@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Geekonverse · Canal de um desenvolvedor de jogos</title>
+  <meta name="description" content="Geekonverse é o canal de um desenvolvedor de jogos: lives a programar, devlogs e os jogos e ferramentas em construção. Joga a Ilha Geekonverse no browser.">
+  <meta property="og:title" content="Geekonverse · Canal de um desenvolvedor de jogos">
+  <meta property="og:description" content="Lives a programar, devlogs e os jogos em construção. Joga a Ilha Geekonverse no browser.">
+  <meta property="og:image" content="https://geekonpage.vercel.app/assets/img/geekonverse.jpg">
+  <link rel="icon" href="assests/giphy.gif">
+  <link rel="alternate" type="application/rss+xml" title="Devlog do Geekonverse" href="feed.xml">
+  <link rel="preload" href="assets/fonts/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script src="assets/js/gsap.min.js" defer></script>
+  <script src="assets/js/ScrollTrigger.min.js" defer></script>
+  <script src="assets/js/SplitText.min.js" defer></script>
+  <script src="assets/js/lenis.min.js" defer></script>
+  <script src="assets/js/main.js" defer></script>
+</head>
+<body>
+<a class="pular" href="#projetos">Saltar para os projetos</a>
+<div class="mira" aria-hidden="true"><b>Abrir</b></div>
+
+<div class="capa">
+  <canvas data-pixeis aria-hidden="true"></canvas>
+  <header class="topo"><div class="wrap">
+    <a class="marca" href="#"><img src="assests/giphy.gif" alt="" width="40" height="40">Geekonverse</a>
+    <nav aria-label="Principal"><a href="#projetos">Projetos</a><a href="#devlog">Devlog</a><a href="#canais">Canais</a><a href="#contacto">Contacto</a></nav>
+  </div></header>
+  <div class="wrap hero">
+    <p class="hud" data-entra><span class="ponto"></span>Canal de um desenvolvedor</p>
+    <h1 data-titulo>Faço jogos. E mostro como.</h1>
+    <p class="hero__texto" data-entra>Lives a programar, devlogs e os jogos e ferramentas que estou a construir. Entre um projeto e outro, a Ilha Geekonverse está aberta para jogar.</p>
+    <div class="acoes" data-entra>
+      <button class="btn btn--cheio" type="button" data-jogar data-iman>Jogar a Ilha</button>
+      <a class="btn btn--vazio" href="#projetos" data-iman>Ver projetos</a>
+    </div>
+  </div>
+  <span class="rolar" aria-hidden="true"></span>
+</div>
+
+<main>
+  <!-- ===================== PROJETOS ===================== -->
+  <section id="projetos" class="galeria" aria-label="Projetos">
+    <div class="pista">
+      <div class="painel painel--intro"><div class="wrap">
+        <h2 data-sobe>Projetos</h2>
+        <p data-sobe>Dois jogos, uma ferramenta e o trabalho que paga as contas. Cada um anda ao seu ritmo; as novidades saem no devlog.</p>
+        <span class="dica" aria-hidden="true">Continua a rolar <svg viewBox="0 0 46 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M2 8h40M35 2l7 6-7 6"/></svg></span>
+      </div></div>
+
+      <article class="painel painel--grafite"><div class="wrap">
+        <div class="janela" data-inclina>
+          <span class="barra" aria-hidden="true"><i></i><i></i><i></i><span>grafite city / protótipo 0.3.1</span></span>
+          <span class="vista vista--video"><video src="assets/img/grafite-logo.mp4" poster="assets/img/grafite-logo.webp" muted loop playsinline preload="none" data-video aria-label="Logótipo do Grafite City a ser pintado em spray"></video></span>
+        </div>
+        <div class="info" data-info>
+          <span class="tipo">Jogo · em desenvolvimento</span>
+          <h3>Grafite City</h3>
+          <p>Ação isométrica numa cidade de grafite e neon. Lutas com a Espada Extensora e o spray, a Vó Lurdes como aliada, quatro bairros com chefes e o Senhor do Lag à espera no fim. Joga-se a solo ou em dupla no mesmo ecrã.</p>
+          <dl><dt>Feito com</dt><dd>three.js, a caminho do Unity</dd><dt>Estado</dt><dd>Protótipo jogável, versão 0.3.1</dd></dl>
+          <div class="ligacoes"><a class="ver" href="#devlog/apresento-o-grafite-city">Ler a apresentação</a></div>
+        </div>
+      </div></article>
+
+      <article class="painel painel--ilha"><div class="wrap">
+        <button class="janela" type="button" data-jogar data-cursor="Jogar" data-inclina aria-label="Jogar a Ilha Geekonverse aqui na página">
+          <span class="barra" aria-hidden="true"><i></i><i></i><i></i><span>ilha geekonverse</span></span>
+          <span class="vista vista--fixa" data-paralaxe><img src="assets/img/ilha.webp" width="640" height="360" alt="A Ilha Geekonverse em pixel art: o Mercado, a Forja, o Farol e o Portal da Masmorra" loading="lazy"></span>
+        </button>
+        <div class="info" data-info>
+          <span class="tipo">Jogo · jogável</span>
+          <h3>Ilha Geekonverse</h3>
+          <p>Um jogo isométrico em pixel art, no browser. Desce às masmorras, junta ouro e cristais e evolui a tua ilha. No Quadro de Quests há mini quests com dia e hora.</p>
+          <dl><dt>Feito com</dt><dd>JavaScript, React e Supabase</dd><dt>Estado</dt><dd>Jogável, em atualização</dd></dl>
+          <div class="ligacoes"><button class="ver" type="button" data-jogar>Jogar aqui</button><a class="ver ver--leve" href="store.html">Abrir em ecrã inteiro</a></div>
+        </div>
+      </div></article>
+
+      <article class="painel painel--assistente"><div class="wrap">
+        <div class="janela janela--chat" data-inclina aria-hidden="true">
+          <span class="barra"><i></i><i></i><i></i><span>assistente / maquete</span></span>
+          <span class="vista chat">
+            <span class="msg msg--eu">Olá! O que sabes fazer?</span>
+            <span class="msg msg--bot">Ainda estou a aprender. Cada versão nova sai no devlog.</span>
+            <span class="msg msg--bot msg--escreve"><i></i><i></i><i></i></span>
+          </span>
+        </div>
+        <div class="info" data-info>
+          <span class="tipo">Ferramenta · em construção</span>
+          <h3 data-a-preencher="nome do assistente">Assistente virtual</h3>
+          <p data-a-preencher="o que o assistente faz">Um assistente virtual que estou a construir: começou com ajuda de IA e passa, versão a versão, a ser escrito por mim.</p>
+          <dl><dt>Estado</dt><dd>Em construção</dd></dl>
+          <div class="ligacoes"><a class="ver" href="#devlog">Ver as atualizações</a></div>
+        </div>
+      </div></article>
+
+      <article class="painel painel--sites"><div class="wrap">
+        <a class="janela" href="https://guilherme-oliveira.pages.dev" target="_blank" rel="noopener" data-cursor="Abrir" data-inclina aria-label="Abrir o portfólio de sites (abre noutro separador)">
+          <span class="barra" aria-hidden="true"><i></i><i></i><i></i><span>guilherme-oliveira.pages.dev</span></span>
+          <span class="vista" data-rolo><img src="assets/img/sites.jpg" width="960" height="1783" alt="Página de um site de demonstração feito para o portfólio: uma barbearia com letras grandes e tabela de preços" loading="lazy"></span>
+        </a>
+        <div class="info" data-info>
+          <span class="tipo">Trabalho paralelo</span>
+          <h3>Sites com movimento</h3>
+          <p>Além dos jogos, faço sites e identidade visual para negócios, com o mesmo gosto por animação que vês aqui.</p>
+          <dl><dt>Faço</dt><dd>Sites, identidade visual e animação</dd></dl>
+          <div class="ligacoes"><a class="ver" href="https://guilherme-oliveira.pages.dev" target="_blank" rel="noopener">Ver o portfólio</a></div>
+        </div>
+      </div></article>
+    </div>
+    <span class="progresso" aria-hidden="true"></span>
+  </section>
+
+  <!-- ===================== DEVLOG ===================== -->
+  <section id="devlog" class="devlog"><div class="wrap">
+    <div class="devlog__cabeca">
+      <h2 class="titulo" data-sobe>Devlog</h2>
+      <p data-sobe>O que mudou em cada projeto, pela ordem em que aconteceu. Toca numa entrada para a ler.</p>
+    </div>
+    <!-- FILTROS -->
+    <ol class="registo" data-registo>
+      <!-- DEVLOG -->
+    </ol>
+  </div></section>
+
+  <!-- ===================== CANAIS ===================== -->
+  <section id="canais" class="canais">
+    <div class="canais__fundo" aria-hidden="true"><img src="assets/img/geekonverse.jpg" alt="" width="1280" height="800" loading="lazy"></div>
+    <div class="wrap">
+      <h2 class="titulo" data-sobe>Onde acompanhar</h2>
+      <p class="canais__intro" data-sobe>As lives são onde o código acontece. Os vídeos ficam no YouTube e os bastidores no Instagram.</p>
+      <ul class="redes">
+        <li><a href="https://www.twitch.tv/geekonverse" target="_blank" rel="noopener" data-rede><span class="redes__nome">Twitch</span><span class="redes__nota">Lives a programar</span><svg viewBox="0 0 46 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M2 8h40M35 2l7 6-7 6"/></svg></a></li>
+        <li><a href="https://www.youtube.com/@geekonverse" target="_blank" rel="noopener" data-rede><span class="redes__nome">YouTube</span><span class="redes__nota">Vídeos e devlogs</span><svg viewBox="0 0 46 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M2 8h40M35 2l7 6-7 6"/></svg></a></li>
+        <li><a href="https://www.instagram.com/geekonverse/" target="_blank" rel="noopener" data-rede><span class="redes__nome">Instagram</span><span class="redes__nota">Bastidores</span><svg viewBox="0 0 46 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M2 8h40M35 2l7 6-7 6"/></svg></a></li>
+      </ul>
+      <div class="live" data-live>
+        <button class="btn btn--vazio" type="button" data-ver-live>Ver a live da Twitch aqui</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTACTO ===================== -->
+  <section id="contacto" class="contacto">
+    <div class="letreiro" aria-hidden="true"><div data-letreiro><span>Bora jogar?</span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v8h8v4h-8v8h-4v-8H2v-4h8z"/></svg><span>Bora jogar?</span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v8h8v4h-8v8h-4v-8H2v-4h8z"/></svg><span>Bora jogar?</span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v8h8v4h-8v8h-4v-8H2v-4h8z"/></svg><span>Bora jogar?</span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 2h4v8h8v4h-8v8h-4v-8H2v-4h8z"/></svg></div></div>
+    <div class="wrap contacto__grelha">
+      <div>
+        <h2 class="titulo" data-sobe>Fala comigo</h2>
+        <p data-sobe>Uma ideia para um jogo, uma collab numa live, um bug na Ilha ou uma proposta de parceria. Escreve por aqui.</p>
+      </div>
+      <!-- O envio é feito pelo Web3Forms. A chave abaixo é pública por natureza. -->
+      <form class="formulario" id="contactForm" data-sobe>
+        <input type="hidden" name="access_key" value="64c42f3e-f1fe-4e53-84b4-0369274ac735">
+        <input type="hidden" name="subject" value="Nova mensagem através do Geekonverse">
+        <input type="checkbox" name="botcheck" class="escondido" tabindex="-1" autocomplete="off">
+        <label>Nome<input type="text" name="name" autocomplete="name" required></label>
+        <label>Email<input type="email" name="email" autocomplete="email" required></label>
+        <label>Mensagem<textarea name="message" rows="5" required></textarea></label>
+        <button class="btn btn--escuro" type="submit" id="submitButton">Enviar mensagem</button>
+        <p class="formulario__estado" data-estado role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="rodape"><div class="wrap">
+  <span>Geekonverse, desde 2022</span>
+  <nav aria-label="Rodapé"><a href="store.html">Ilha em ecrã inteiro</a><a href="privacypolicy.html">Política de privacidade</a><a href="feed.xml">RSS do devlog</a></nav>
+</div></footer>
+
+<dialog class="consola" data-consola aria-label="Ilha Geekonverse">
+  <div class="consola__barra"><span class="hud"><span class="ponto"></span>Ilha Geekonverse</span><span><a href="store.html">Ecrã inteiro</a><button type="button" data-fechar>Fechar</button></span></div>
+  <iframe title="Ilha Geekonverse, o jogo" data-src="store.html?embed=1"></iframe>
+</dialog>
+</body>
+</html>

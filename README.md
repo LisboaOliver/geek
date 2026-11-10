@@ -1,93 +1,47 @@
-
-[README.md](https://github.com/user-attachments/files/19932235/README.md)
 # Geekonverse
 
-Geekonverse é um projeto focado em conectar e expandir a comunidade geek e da cultura pop.
-Este website oferece uma plataforma interativa com efeitos dinâmicos de neon, design responsivo e navegação simples.
+Canal de um desenvolvedor de jogos: uma só página com os projetos (Grafite City, Ilha Geekonverse,
+assistente virtual, sites), o devlog, os canais e o contacto. A Ilha joga-se por cima da página.
+Em produção em https://geekonpage.vercel.app
 
-## Estrutura do Projeto
+## Publicar uma entrada no devlog
 
-```
-/ (raiz)
-├── index.html
-├── about.html
-├── /assets
-│    └── imagens, gifs
-├── /css
-│    └── style.css
-├── /js
-│    └── script.js
-      └── game.js
-└── README.md
-```
+1. Em `posts/`, copia `_modelo.md` e dá-lhe o nome `AAAA-MM-DD-nome-curto.md`.
+2. Preenche o cabeçalho entre os dois `---`:
+   - `titulo`, `data` (AAAA-MM-DD) e `projeto` são obrigatórios;
+   - `resumo`, `capa` e `capa_texto` são opcionais;
+   - enquanto houver `rascunho: sim`, a entrada não aparece. Apaga essa linha para publicar.
+3. Escreve o texto por baixo, em Markdown. Imagens em `posts/img/` (no texto: `img/nome.webp`).
+4. Envia para o GitHub (`main`). A Vercel gera e publica sozinha em 1 a 2 minutos.
 
-## Funcionalidades
+Escreve o nome do projeto sempre igual (`Grafite City`, `Ilha Geekonverse`, `Geekonverse`...):
+é ele que cria os filtros. Cada entrada tem ligação direta: `/#devlog/nome-curto`.
 
-- Animações de fundo em neon dinâmicas (canvas + JavaScript)
-- Efeitos interativos com o movimento do mouse
-- Footer fixo e responsivo
-- Layout adaptável para dispositivos móveis
-- Navegação clara entre páginas
+## Ver no computador
 
-## Tecnologias Utilizadas
+Precisa do Node.js.
 
-- HTML5
-- CSS3
-- JavaScript
-- Git e GitHub
-
-## Como Executar Localmente
-
-1. Clone o repositório:
 ```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
+npm install        # só na primeira vez
+npm run build      # gera o site em dist/
+npx serve dist     # abre http://localhost:3000
 ```
-2. Navegue até a pasta do projeto:
-```bash
-cd seu-repositorio
+
+## Estrutura
+
 ```
-3. Abra o arquivo `index.html` no seu navegador.
+pagina.html          a página única (o devlog entra no lugar de <!-- DEVLOG -->)
+assets/css/site.css  visual
+assets/js/main.js    animações (GSAP, ScrollTrigger, SplitText, Lenis: locais em assets/js)
+assets/img/          imagens e o vídeo do Grafite City
+posts/               devlog (.md) e imagens (posts/img/)
+scripts/construir.js gera dist/: index.html e feed.xml
+store.html           a Ilha Geekonverse. Com ?embed=1 aparece sem menu (é assim que abre na página)
+css/, js/, assests/  ficheiros do jogo da Ilha
+supabase/            contas, pontos e pagamentos da Ilha (ver GUIA.md)
+licencas/            licenças das fontes (OFL), GSAP e Lenis (MIT)
+```
 
-## Melhorias Futuras
+## Por preencher
 
-- Integração com API para conteúdos dinâmicos
-- Seção de blog para novidades e atualizações
-- Modo escuro baseado no horário do usuário
-- Personalização do cursor
-
-## Licença
-
-Este projeto está licenciado sob a licença MIT.
-
----
-
-🚀 Geekonverse - Explore seu universo digital!
-
-
-## Tecnologias Utilizadas
-
-- HTML5
-- CSS3
-- JavaScript
-- Git e GitHub
-
-## Como Executar Localmente
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
-
-## Loja (store.html): Ilha Geekonverse
-
-A loja é um jogo em vista isométrica: uma ilha base sobre um peixe gigante e masmorras ao estilo Diablo.
-
-- **Produtos e preços:** `js/constants.js`, lista `PRODUCTS` (preços em euros). Peças da TeePublic e da Amazon usam o campo `external` com o link da sua página.
-- **Eventos e mini quests:** criam-se no Supabase, tabela `events` (ver `supabase/GUIA.md`). `js/events.js` fica como reserva. O evento ativo aparece na faixa do topo da loja.
-- **Contas e pontos de promoção:** Supabase (login por link mágico). Configuração em `supabase/GUIA.md`, base de dados em `supabase/schema.sql`, código em `js/account.js`.
-- **Envio:** `FREE_SHIPPING_FROM` e `SHIPPING_COST` em `js/constants.js`.
-- **Edifícios, monstros e saque:** também em `js/constants.js`.
-- **Aspeto e fases dos edifícios (nível 0 a 5) e crescimento da ilha:** `js/buildings.js` (nomes das fases em `BUILDING_STAGES`).
-- O ouro e os cristais das masmorras só servem para evoluir a ilha e ficam guardados no navegador de cada jogador.
-- Para testar, abra `store.html?debug` e use `__geek` na consola.
-
-Ficheiros do jogo: `constants.js`, `events.js`, `world.js` (mapas), `particles.js`, `renderer.js` (desenho), `buildings.js` (edifícios), `creatures.js` (herói e monstros), `pixel.js` (filtro de pixel art), `game.js` (motor), `ui.js` (React) e `css/store.css`.
+- Assistente virtual: nome, o que faz e com que tecnologia (`pagina.html`, procurar `data-a-preencher`).

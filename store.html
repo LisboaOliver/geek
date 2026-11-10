@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Geek Store · Ilha Geekonverse</title>
+    <title>Ilha Geekonverse · Geekonverse</title>
+    <link rel="icon" href="assests/giphy.gif">
+    <!-- Dentro da página principal (store.html?embed=1) o jogo aparece sem menu nem rodapé -->
+    <script>if (new URLSearchParams(location.search).has('embed')) document.documentElement.classList.add('embutido');</script>
+    <style>.embutido .cabecalho, .embutido .rodape { display: none; } .embutido .conteudo_loja { padding-top: 10px; }</style>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/store.css">
 
@@ -31,9 +35,9 @@
 
     <header class="cabecalho">
       <nav class="cabecalho_menu">
-        <a class="link_pagina glass" href="index.html">Home</a>
-        <a class="link_pagina glass" href="about.html">About us</a>
-        <a class="link_pagina glass" href="store.html">Store</a>
+        <a class="link_pagina glass" href="index.html">Início</a>
+        <a class="link_pagina glass" href="index.html#devlog">Devlog</a>
+        <a class="link_pagina glass" href="store.html">Ilha</a>
       </nav>
     </header>
 
@@ -47,7 +51,7 @@
 
     <footer class="rodape">
       <p>@Geekonverse company 2022®</p>
-      <a href="contact.html">Contacta-nos</a>
+      <a href="index.html#contacto">Contacto</a>
       <a href="privacypolicy.html">Política de privacidade</a>
     </footer>
 

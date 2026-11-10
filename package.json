@@ -1,0 +1,11 @@
+{
+  "name": "geekonverse",
+  "private": true,
+  "description": "Site do Geekonverse: diário de projetos e a Ilha Geekonverse",
+  "scripts": {
+    "build": "node scripts/construir.js"
+  },
+  "dependencies": {
+    "marked": "^18.0.0"
+  }
+}

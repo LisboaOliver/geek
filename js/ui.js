@@ -158,7 +158,7 @@ function CartPanel({ cart, acc, onClose, onChange, onClear, onLogin }) {
     setErr(null); setPaying(true);
     try {
       const url = await Account.checkout({ items: cart.map(i => ({ id: i.id, qty: i.qty })), country, points: pts });
-      window.location.href = url;
+      (window.top || window).location.href = url; // dentro da consola da página principal, o pagamento abre na janela toda
     } catch (e) {
       setErr(e.message); setPaying(false);
     }
@@ -234,7 +234,7 @@ function CartPanel({ cart, acc, onClose, onChange, onClear, onLogin }) {
           </button>
           <div className="gs-checkout-note">
             Pagamento seguro pela Stripe: cartão, MB WAY ou Multibanco. A morada é pedida no passo seguinte.
-            Do Brasil ou de outro país? <a href="contact.html">Fala connosco por mensagem</a>.
+            Do Brasil ou de outro país? <a href="index.html#contacto" target="_top">Fala connosco por mensagem</a>.
           </div>
           <button className="gs-btn gs-btn-ghost gs-btn-block" onClick={onClear} disabled={paying}>Esvaziar bolsa</button>
         </>
@@ -349,7 +349,7 @@ function AccountPanel({ acc, onClose, notify }) {
           <input id="gs-email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="o.teu@email.com"/>
           {err && <p className="gs-error" role="alert">{err}</p>}
           <button className="gs-btn gs-btn-block" disabled={busy}>{busy ? "A enviar…" : "Enviar link de entrada"}</button>
-          <p className="gs-muted gs-small">Ao criar conta aceitas a <a href="privacypolicy.html">política de privacidade</a>.</p>
+          <p className="gs-muted gs-small">Ao criar conta aceitas a <a href="privacypolicy.html" target="_top">política de privacidade</a>.</p>
         </form>
       )}
     </Panel>

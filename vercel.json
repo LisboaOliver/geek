@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/about.html", "destination": "/", "permanent": true },
+    { "source": "/contact.html", "destination": "/#contacto", "permanent": true }
+  ]
+}
