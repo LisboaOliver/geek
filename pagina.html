@@ -17,7 +17,6 @@
   <script src="assets/js/SplitText.min.js" defer></script>
   <script src="assets/js/lenis.min.js" defer></script>
   <script src="assets/js/main.js" defer></script>
-  <script src="assets/js/ilha-flutuante.js" defer></script>
 </head>
 <body>
 <a class="pular" href="#projetos">Saltar para os projetos</a>
@@ -34,7 +33,7 @@
     <h1 data-titulo>Faço jogos. E mostro como.</h1>
     <p class="hero__texto" data-entra>Lives a programar, devlogs e os jogos e ferramentas que estou a construir. Entre um projeto e outro, a Ilha Geekonverse está aberta para jogar.</p>
     <div class="acoes" data-entra>
-      <button class="btn btn--cheio" type="button" data-jogar data-iman>Jogar a Ilha</button>
+      <a class="btn btn--cheio" href="store.html" data-iman>Jogar a Ilha</a>
       <a class="btn btn--vazio" href="#projetos" data-iman>Ver projetos</a>
     </div>
   </div>
@@ -66,16 +65,16 @@
       </div></article>
 
       <article class="painel painel--ilha"><div class="wrap">
-        <button class="janela" type="button" data-jogar data-cursor="Jogar" data-inclina aria-label="Jogar a Ilha Geekonverse numa janela por cima da página">
+        <a class="janela" href="store.html" data-cursor="Jogar" data-inclina aria-label="Jogar a Ilha Geekonverse">
           <span class="barra" aria-hidden="true"><i></i><i></i><i></i><span>ilha geekonverse</span></span>
           <span class="vista vista--fixa" data-paralaxe><img src="assets/img/ilha.webp" width="640" height="360" alt="A Ilha Geekonverse em pixel art: o Mercado, a Forja, o Farol e o Portal da Masmorra" loading="lazy"></span>
-        </button>
+        </a>
         <div class="info" data-info>
           <span class="tipo">Jogo · jogável</span>
           <h3>Ilha Geekonverse</h3>
           <p>Um jogo isométrico em pixel art, no browser. Desce às masmorras, junta ouro e cristais e evolui a tua ilha. No Quadro de Quests há mini quests com dia e hora.</p>
           <dl><dt>Feito com</dt><dd>JavaScript, React e Supabase</dd><dt>Estado</dt><dd>Jogável, em atualização</dd></dl>
-          <div class="ligacoes"><button class="ver" type="button" data-jogar>Jogar aqui</button><a class="ver ver--leve" href="store.html">Abrir na página própria</a></div>
+          <div class="ligacoes"><a class="ver" href="store.html">Jogar a Ilha</a></div>
         </div>
       </div></article>
 
@@ -168,24 +167,7 @@
 
 <footer class="rodape"><div class="wrap">
   <span>Geekonverse, desde 2022</span>
-  <nav aria-label="Rodapé"><a href="store.html">Ilha na página própria</a><a href="privacypolicy.html">Política de privacidade</a><a href="feed.xml">RSS do devlog</a></nav>
+  <nav aria-label="Rodapé"><a href="store.html">Ilha Geekonverse</a><a href="privacypolicy.html">Política de privacidade</a><a href="feed.xml">RSS do devlog</a></nav>
 </div></footer>
-
-<!-- Ilha Geekonverse: janela flutuante (o jogo só carrega quando se abre) -->
-<button class="ilha-bolha is-fora" type="button" data-jogar data-ilha-bolha aria-label="Jogar a Ilha Geekonverse aqui na página">
-  <img src="assets/img/ilha-icone.webp" alt="" width="56" height="56"><span>Jogar a Ilha</span>
-</button>
-<section class="ilha-janela" data-ilha hidden aria-label="Ilha Geekonverse" data-lenis-prevent>
-  <header class="ilha-janela__barra" data-ilha-arrastar title="Arrasta para mudar de sítio · dois cliques para aumentar">
-    <span class="hud"><span class="ponto"></span>Ilha Geekonverse</span>
-    <span class="ilha-janela__botoes">
-      <button type="button" data-ilha-tamanho="janela" aria-pressed="true">Janela</button>
-      <button type="button" data-ilha-tamanho="grande" aria-pressed="false">Grande</button>
-      <button type="button" data-ilha-tamanho="inteiro" aria-pressed="false">Ecrã inteiro</button>
-      <button type="button" class="ilha-janela__fechar" data-ilha-fechar aria-label="Fechar a Ilha (o progresso fica guardado)">✕</button>
-    </span>
-  </header>
-  <div class="ilha-janela__jogo" data-ilha-jogo tabindex="-1"><p class="ilha-janela__aviso">A carregar a ilha…</p></div>
-</section>
 </body>
 </html>

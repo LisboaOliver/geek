@@ -23,9 +23,20 @@ Precisa do Node.js.
 
 ```bash
 npm install        # só na primeira vez
-npm run build      # gera o site em dist/
-npx serve dist     # abre http://localhost:3000
+npm run ver        # gera o site e abre-o em http://localhost:4173
 ```
+
+## Teste de regressão (antes de cada entrega)
+
+```bash
+npx playwright install chromium   # só na primeira vez
+npm test                          # gera o site e testa no computador e no telemóvel
+```
+
+Verifica que a página abre sem erros, que nenhum ficheiro falta, que não há scroll para o lado,
+que o menu, o devlog (entradas, links diretos e filtros), o RSS e o formulário funcionam, e que os
+ficheiros da Ilha continuam iguais ao original. Deixa capturas da página em `tests/capturas/` para
+olhares. Se um teste falhar, a mensagem diz qual e porquê; não publiques até passar.
 
 ## Estrutura
 
@@ -36,8 +47,9 @@ assets/js/main.js    animações (GSAP, ScrollTrigger, SplitText, Lenis: locais 
 assets/img/          imagens e o vídeo do Grafite City
 posts/               devlog (.md) e imagens (posts/img/)
 scripts/construir.js gera dist/: index.html e feed.xml
-assets/js/ilha-flutuante.js  a Ilha numa janela flutuante na página (só carrega o jogo quando se abre)
-store.html           a Ilha Geekonverse na página própria
+scripts/servir.js    servidor local para ver dist/ (npm run ver)
+tests/               teste de regressão (npm test)
+store.html           a Ilha Geekonverse (jogo antigo, sem alterações)
 css/, js/, assests/  ficheiros do jogo da Ilha
 supabase/            contas, pontos e pagamentos da Ilha (ver GUIA.md)
 licencas/            licenças das fontes (OFL), GSAP e Lenis (MIT)
@@ -45,11 +57,9 @@ licencas/            licenças das fontes (OFL), GSAP e Lenis (MIT)
 
 ## A Ilha (jogo)
 
-- O motor está em `js/game.js` e companhia (JavaScript simples); a interface em `js/ui.js` (React, com JSX).
-- O build converte o JSX do `ui.js` em JavaScript normal e copia o React, o ReactDOM e o Supabase
-  para `assets/vendor/`. Não há Babel no navegador nem bibliotecas vindas de CDNs.
-- Por isso, para ver o jogo no computador, usa sempre `npm run build` e abre a versão em `dist/`.
-- Na janela flutuante o teclado só mexe o herói quando o jogo tem o foco (clica no jogo).
+A Ilha Geekonverse fica como estava: `store.html` com os ficheiros em `css/`, `js/` e `assests/`.
+A página principal só liga para ela. O jogo vai ter um site próprio; até lá, não mexer nestes ficheiros
+(o teste de regressão confirma que continuam iguais).
 
 ## Por preencher
 

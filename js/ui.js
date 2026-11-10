@@ -158,7 +158,7 @@ function CartPanel({ cart, acc, onClose, onChange, onClear, onLogin }) {
     setErr(null); setPaying(true);
     try {
       const url = await Account.checkout({ items: cart.map(i => ({ id: i.id, qty: i.qty })), country, points: pts });
-      (window.top || window).location.href = url; // dentro da consola da página principal, o pagamento abre na janela toda
+      window.location.href = url;
     } catch (e) {
       setErr(e.message); setPaying(false);
     }
@@ -234,7 +234,7 @@ function CartPanel({ cart, acc, onClose, onChange, onClear, onLogin }) {
           </button>
           <div className="gs-checkout-note">
             Pagamento seguro pela Stripe: cartão, MB WAY ou Multibanco. A morada é pedida no passo seguinte.
-            Do Brasil ou de outro país? <a href="index.html#contacto" target="_top">Fala connosco por mensagem</a>.
+            Do Brasil ou de outro país? <a href="contact.html">Fala connosco por mensagem</a>.
           </div>
           <button className="gs-btn gs-btn-ghost gs-btn-block" onClick={onClear} disabled={paying}>Esvaziar bolsa</button>
         </>
@@ -349,7 +349,7 @@ function AccountPanel({ acc, onClose, notify }) {
           <input id="gs-email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="o.teu@email.com"/>
           {err && <p className="gs-error" role="alert">{err}</p>}
           <button className="gs-btn gs-btn-block" disabled={busy}>{busy ? "A enviar…" : "Enviar link de entrada"}</button>
-          <p className="gs-muted gs-small">Ao criar conta aceitas a <a href="privacypolicy.html" target="_top">política de privacidade</a>.</p>
+          <p className="gs-muted gs-small">Ao criar conta aceitas a <a href="privacypolicy.html">política de privacidade</a>.</p>
         </form>
       )}
     </Panel>
@@ -500,11 +500,7 @@ function Hud({ s, cartCount, onAction, onCart, onHelp, onLeave, acc, onAccount }
 }
 
 // ── Componente raiz ───────────────────────────────────────────────────────────
-// Props (todas opcionais, usadas pela janela flutuante da página principal):
-//   flutuante  — painéis ficam dentro da janela do jogo
-//   isActive   — função: o teclado só mexe o herói quando devolve true
-//   aoIniciar  — recebe o motor (para parar/retomar quando a janela fecha)
-function PixelStore({ flutuante = false, isActive, aoIniciar } = {}) {
+function PixelStore() {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const [s, setS] = useState({ scene: "island", hp: HERO.baseHp, maxHp: HERO.baseHp, gold: 0, crystals: 0, runGold: 0, runCrystals: 0, floor: 0, bestFloor: 0, levels: {}, near: null, monstersLeft: 0 });
@@ -535,11 +531,9 @@ function PixelStore({ flutuante = false, isActive, aoIniciar } = {}) {
       onToast: notify,
       onOpenBuilding: b => setOpen(b.id),
       onDeath: info => setDeath(info),
-      isActive,
     });
     engineRef.current = engine;
     engine.start();
-    aoIniciar?.(engine);
     return () => engine.destroy();
   }, [notify]);
 
@@ -596,7 +590,7 @@ function PixelStore({ flutuante = false, isActive, aoIniciar } = {}) {
   const close = () => setOpen(null);
 
   return (
-    <div className={`gs-root ${flutuante ? "is-flutuante" : ""}`}>
+    <div className="gs-root">
       <EventBanner onOpenQuests={() => setOpen("quests")}/>
       <div className="gs-stage">
         <canvas ref={canvasRef} className="gs-canvas" aria-label="Jogo da loja Geekonverse"/>

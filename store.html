@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ilha Geekonverse · Geekonverse</title>
-    <link rel="icon" href="assests/giphy.gif">
+    <title>Geek Store · Ilha Geekonverse</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/store.css">
 
-    <!-- React, ReactDOM e Supabase vêm do próprio site (o build copia-os para assets/vendor) -->
-    <script src="assets/vendor/react.production.min.js"></script>
-    <script src="assets/vendor/react-dom.production.min.js"></script>
+    <!-- React + Babel via CDN (zero instalação) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 
     <!-- Scripts do jogo (a ordem importa!) -->
     <script src="js/constants.js"></script>
@@ -24,16 +24,16 @@
     <script src="js/pixel.js"></script>
     <script src="js/game.js"></script>
     <!-- Contas de jogador (Supabase) -->
-    <script src="assets/vendor/supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
     <script src="js/account.js"></script>
 </head>
 <body class="pagina_loja">
 
     <header class="cabecalho">
       <nav class="cabecalho_menu">
-        <a class="link_pagina glass" href="index.html">Início</a>
-        <a class="link_pagina glass" href="index.html#devlog">Devlog</a>
-        <a class="link_pagina glass" href="store.html">Ilha</a>
+        <a class="link_pagina glass" href="index.html">Home</a>
+        <a class="link_pagina glass" href="about.html">About us</a>
+        <a class="link_pagina glass" href="store.html">Store</a>
       </nav>
     </header>
 
@@ -47,13 +47,16 @@
 
     <footer class="rodape">
       <p>@Geekonverse company 2022®</p>
-      <a href="index.html#contacto">Contacto</a>
+      <a href="contact.html">Contacta-nos</a>
       <a href="privacypolicy.html">Política de privacidade</a>
     </footer>
 
-    <!-- ui.js é escrito com JSX; o build converte-o em JavaScript normal (sem Babel no navegador) -->
-    <script src="js/ui.js"></script>
-    <script>ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(PixelStore));</script>
+    <!-- ui.js usa JSX, precisa do Babel -->
+    <script type="text/babel" src="js/ui.js"></script>
+    <script type="text/babel">
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(React.createElement(PixelStore));
+    </script>
 
 </body>
 </html>

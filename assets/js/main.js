@@ -118,8 +118,6 @@
     if (d) { d.open = true; setTimeout(() => (window.__lenis ? __lenis.scrollTo(d, { offset: -20 }) : d.scrollIntoView()), 60); }
   }
 
-  /* A Ilha abre numa janela flutuante: ver ilha-flutuante.js */
-
   /* ---------- live da Twitch: só carrega quando se pede ---------- */
   $('[data-ver-live]')?.addEventListener('click', e => {
     const host = location.hostname || 'geekonpage.vercel.app';
@@ -145,6 +143,7 @@
     }
   });
 
+  addEventListener('hashchange', abrirDoEndereco); // links #devlog/nome dentro da própria página
   if (!window.gsap || reduzido) { abrirDoEndereco(); return; }
   gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -154,7 +153,7 @@
   gsap.ticker.add(t => lenis.raf(t * 1000));
   gsap.ticker.lagSmoothing(0);
   $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
-    const id = a.getAttribute('href'); if (id.length < 2) return;
+    const id = a.getAttribute('href'); if (id.length < 2 || id.startsWith('#devlog/')) return; // #devlog/... abre pelo hashchange
     const alvo = $(id); if (alvo) { e.preventDefault(); lenis.scrollTo(alvo, { duration: 1.4 }); }
   }));
 
@@ -259,10 +258,6 @@
   if (!toque && mira) {
     const mx = gsap.quickTo(mira, 'x', { duration: .35, ease: 'power3' }), my = gsap.quickTo(mira, 'y', { duration: .35, ease: 'power3' });
     addEventListener('pointermove', e => { mx(e.clientX); my(e.clientY); }, { passive: true });
-    // por cima da Ilha flutuante, a mira sai e fica o cursor normal do jogo
-    const ilha = $('[data-ilha]');
-    ilha?.addEventListener('pointerenter', () => gsap.to(mira, { opacity: 0, duration: .2 }));
-    ilha?.addEventListener('pointerleave', () => gsap.to(mira, { opacity: 1, duration: .2 }));
     $$('[data-cursor]').forEach(el => {
       el.addEventListener('pointerenter', () => { $('b', mira).textContent = el.dataset.cursor || 'Abrir'; mira.classList.add('grande'); });
       el.addEventListener('pointerleave', () => mira.classList.remove('grande'));

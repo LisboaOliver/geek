@@ -379,25 +379,3 @@ kbd {
 .gs-panel-body .gs-error { margin-top: 12px; padding: 10px 12px; border: 1px solid #ff7b7b55; border-radius: 8px; background: #2a0e10; }
 .gs-pay { margin-top: 14px; font-size: 18px; }
 .gs-checkout-note a { color: var(--gs-gold); }
-
-/* ── janela flutuante (página principal) ────────────────────────────────── */
-.gs-root.is-flutuante { min-height: 0; height: 100%; }
-.gs-root.is-flutuante .gs-overlay { position: absolute; z-index: 20; }
-.gs-root.is-flutuante .gs-panel { max-height: calc(100% - 24px); }
-/* a janela pode ser estreita num ecrã grande: compacta pela largura da janela, não do ecrã */
-@container ilha (max-width: 700px) {
-  .gs-banner { padding: 8px 12px; font-size: 14px; border-radius: 14px; }
-  .gs-banner-title { font-size: 16px; }
-  .gs-banner-text { display: none; }
-  .gs-orb { width: 66px; height: 66px; }
-  .gs-orb-text { font-size: 16px; }
-  .gs-res { min-width: 0; padding: 6px 10px; }
-  .gs-res-row small { display: none; }
-  .gs-hint { display: none; }
-  .gs-action { font-size: 15px; padding: 10px 14px; }
-  .gs-action kbd { display: none; }
-  .gs-chip { font-size: 14px; }
-  .gs-firsthint { bottom: 96px; font-size: 14px; }
-  .gs-panel-head h2 { font-size: 20px; }
-  .gs-grid { grid-template-columns: 1fr; }
-}
