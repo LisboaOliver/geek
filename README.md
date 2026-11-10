@@ -36,11 +36,20 @@ assets/js/main.js    animações (GSAP, ScrollTrigger, SplitText, Lenis: locais 
 assets/img/          imagens e o vídeo do Grafite City
 posts/               devlog (.md) e imagens (posts/img/)
 scripts/construir.js gera dist/: index.html e feed.xml
-store.html           a Ilha Geekonverse. Com ?embed=1 aparece sem menu (é assim que abre na página)
+assets/js/ilha-flutuante.js  a Ilha numa janela flutuante na página (só carrega o jogo quando se abre)
+store.html           a Ilha Geekonverse na página própria
 css/, js/, assests/  ficheiros do jogo da Ilha
 supabase/            contas, pontos e pagamentos da Ilha (ver GUIA.md)
 licencas/            licenças das fontes (OFL), GSAP e Lenis (MIT)
 ```
+
+## A Ilha (jogo)
+
+- O motor está em `js/game.js` e companhia (JavaScript simples); a interface em `js/ui.js` (React, com JSX).
+- O build converte o JSX do `ui.js` em JavaScript normal e copia o React, o ReactDOM e o Supabase
+  para `assets/vendor/`. Não há Babel no navegador nem bibliotecas vindas de CDNs.
+- Por isso, para ver o jogo no computador, usa sempre `npm run build` e abre a versão em `dist/`.
+- Na janela flutuante o teclado só mexe o herói quando o jogo tem o foco (clica no jogo).
 
 ## Por preencher
 
