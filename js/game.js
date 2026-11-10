@@ -252,8 +252,13 @@ function createGameEngine(canvas, cb) {
   const MOVE = { ArrowUp: [-1, -1], w: [-1, -1], W: [-1, -1], ArrowDown: [1, 1], s: [1, 1], S: [1, 1],
                  ArrowLeft: [-1, 1], a: [-1, 1], A: [-1, 1], ArrowRight: [1, -1], d: [1, -1], D: [1, -1] };
 
+  // Na janela flutuante, o teclado só controla o herói quando o jogo tem o foco
+  // (senão as setas e o espaço deixavam de fazer scroll na página).
+  const ativo = () => !cb.isActive || cb.isActive();
+
   function onKeyDown(e) {
     if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (!ativo()) return;
     if (paused) return;
     if (MOVE[e.key]) { keys[e.key] = true; e.preventDefault(); }
     if (e.key === "e" || e.key === "E" || e.key === "Enter") { e.preventDefault(); interact(); }

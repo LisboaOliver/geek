@@ -128,7 +128,8 @@ const Account = (() => {
     subscribe(fn) { listeners.add(fn); fn({ ...state, claims: new Set(state.claims) }); return () => listeners.delete(fn); },
     async sendLink(email) {
       if (!sb) throw new Error("As contas não estão disponíveis de momento.");
-      const redirect = window.location.origin + window.location.pathname;
+      // volta sempre a store.html (o endereço autorizado no Supabase), mesmo quando o jogo está na janela flutuante
+      const redirect = new URL("store.html", document.baseURI).href;
       const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } });
       if (error) throw new Error(friendly(error));
     },

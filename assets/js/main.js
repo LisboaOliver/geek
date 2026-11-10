@@ -118,18 +118,7 @@
     if (d) { d.open = true; setTimeout(() => (window.__lenis ? __lenis.scrollTo(d, { offset: -20 }) : d.scrollIntoView()), 60); }
   }
 
-  /* ---------- Ilha: joga-se numa consola por cima da página ---------- */
-  const consola = $('[data-consola]');
-  $$('[data-jogar]').forEach(b => b.addEventListener('click', () => {
-    if (!consola || !consola.showModal) { location.href = 'store.html'; return; }
-    const f = $('iframe', consola);
-    if (!f.src) f.src = f.dataset.src;
-    consola.showModal(); window.__lenis && __lenis.stop();
-    setTimeout(() => f.focus(), 300);
-  }));
-  consola?.addEventListener('close', () => window.__lenis && __lenis.start());
-  $('[data-fechar]')?.addEventListener('click', () => consola.close());
-  consola?.addEventListener('click', e => { if (e.target === consola) consola.close(); });
+  /* A Ilha abre numa janela flutuante: ver ilha-flutuante.js */
 
   /* ---------- live da Twitch: só carrega quando se pede ---------- */
   $('[data-ver-live]')?.addEventListener('click', e => {
@@ -270,6 +259,10 @@
   if (!toque && mira) {
     const mx = gsap.quickTo(mira, 'x', { duration: .35, ease: 'power3' }), my = gsap.quickTo(mira, 'y', { duration: .35, ease: 'power3' });
     addEventListener('pointermove', e => { mx(e.clientX); my(e.clientY); }, { passive: true });
+    // por cima da Ilha flutuante, a mira sai e fica o cursor normal do jogo
+    const ilha = $('[data-ilha]');
+    ilha?.addEventListener('pointerenter', () => gsap.to(mira, { opacity: 0, duration: .2 }));
+    ilha?.addEventListener('pointerleave', () => gsap.to(mira, { opacity: 1, duration: .2 }));
     $$('[data-cursor]').forEach(el => {
       el.addEventListener('pointerenter', () => { $('b', mira).textContent = el.dataset.cursor || 'Abrir'; mira.classList.add('grande'); });
       el.addEventListener('pointerleave', () => mira.classList.remove('grande'));

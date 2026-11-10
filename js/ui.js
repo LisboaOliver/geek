@@ -500,7 +500,11 @@ function Hud({ s, cartCount, onAction, onCart, onHelp, onLeave, acc, onAccount }
 }
 
 // ── Componente raiz ───────────────────────────────────────────────────────────
-function PixelStore() {
+// Props (todas opcionais, usadas pela janela flutuante da página principal):
+//   flutuante  — painéis ficam dentro da janela do jogo
+//   isActive   — função: o teclado só mexe o herói quando devolve true
+//   aoIniciar  — recebe o motor (para parar/retomar quando a janela fecha)
+function PixelStore({ flutuante = false, isActive, aoIniciar } = {}) {
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const [s, setS] = useState({ scene: "island", hp: HERO.baseHp, maxHp: HERO.baseHp, gold: 0, crystals: 0, runGold: 0, runCrystals: 0, floor: 0, bestFloor: 0, levels: {}, near: null, monstersLeft: 0 });
@@ -531,9 +535,11 @@ function PixelStore() {
       onToast: notify,
       onOpenBuilding: b => setOpen(b.id),
       onDeath: info => setDeath(info),
+      isActive,
     });
     engineRef.current = engine;
     engine.start();
+    aoIniciar?.(engine);
     return () => engine.destroy();
   }, [notify]);
 
@@ -590,7 +596,7 @@ function PixelStore() {
   const close = () => setOpen(null);
 
   return (
-    <div className="gs-root">
+    <div className={`gs-root ${flutuante ? "is-flutuante" : ""}`}>
       <EventBanner onOpenQuests={() => setOpen("quests")}/>
       <div className="gs-stage">
         <canvas ref={canvasRef} className="gs-canvas" aria-label="Jogo da loja Geekonverse"/>

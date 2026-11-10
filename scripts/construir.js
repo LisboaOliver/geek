@@ -66,6 +66,17 @@ for (const item of COPIAR) if (fs.existsSync(path.join(RAIZ, item))) fs.cpSync(p
 if (fs.existsSync(path.join(POSTS, 'img'))) fs.cpSync(path.join(POSTS, 'img'), path.join(DIST, 'posts', 'img'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), pagina);
 
+// ---------- Ilha: bibliotecas locais e ui.js sem JSX ----------
+const VENDOR = {
+  'react.production.min.js': 'react/umd/react.production.min.js',
+  'react-dom.production.min.js': 'react-dom/umd/react-dom.production.min.js',
+  'supabase.js': '@supabase/supabase-js/dist/umd/supabase.js',
+};
+fs.mkdirSync(path.join(DIST, 'assets', 'vendor'), { recursive: true });
+for (const [nome, origem] of Object.entries(VENDOR)) fs.copyFileSync(path.join(RAIZ, 'node_modules', origem), path.join(DIST, 'assets', 'vendor', nome));
+const ui = require('esbuild').transformSync(fs.readFileSync(path.join(RAIZ, 'js', 'ui.js'), 'utf8'), { loader: 'jsx', jsx: 'transform', target: 'es2019', sourcefile: 'ui.js' });
+fs.writeFileSync(path.join(DIST, 'js', 'ui.js'), '// Gerado a partir de js/ui.js pelo build (JSX convertido). Edita o original, não este.\n' + ui.code);
+
 fs.writeFileSync(path.join(DIST, 'feed.xml'), `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
 <title>Geekonverse · Devlog</title><link>${SITE}/</link><description>O que mudou nos projetos do Geekonverse</description><language>pt-PT</language>

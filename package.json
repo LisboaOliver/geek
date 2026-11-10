@@ -1,11 +1,17 @@
 {
   "name": "geekonverse",
   "private": true,
-  "description": "Site do Geekonverse: diário de projetos e a Ilha Geekonverse",
+  "description": "Geekonverse: canal de um desenvolvedor de jogos e a Ilha Geekonverse",
   "scripts": {
     "build": "node scripts/construir.js"
   },
   "dependencies": {
-    "marked": "^18.0.0"
+    "@supabase/supabase-js": "2.117.2",
+    "marked": "18.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0"
   }
 }
