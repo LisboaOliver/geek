@@ -18,7 +18,7 @@ Para criar uma atualização:
 
 ## Um subtítulo
 
-Texto normal. **Negrito**, *itálico* e [um link](https://geekonpage.vercel.app).
+Texto normal. **Negrito**, *itálico* e [um link](https://geekonverse.pages.dev).
 
 - uma lista
 - com pontos

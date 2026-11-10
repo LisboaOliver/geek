@@ -120,7 +120,7 @@
 
   /* ---------- live da Twitch: só carrega quando se pede ---------- */
   $('[data-ver-live]')?.addEventListener('click', e => {
-    const host = location.hostname || 'geekonpage.vercel.app';
+    const host = location.hostname || 'geekonverse.pages.dev';
     e.currentTarget.parentElement.innerHTML = `<iframe src="https://player.twitch.tv/?channel=geekonverse&parent=${host}&autoplay=false" title="Live do Geekonverse na Twitch" allowfullscreen></iframe>`;
     window.ScrollTrigger && ScrollTrigger.refresh();
   });

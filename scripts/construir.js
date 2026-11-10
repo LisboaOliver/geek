@@ -7,7 +7,8 @@ const { marked } = require('marked');
 const RAIZ = path.join(__dirname, '..');
 const DIST = path.join(RAIZ, 'dist');
 const POSTS = path.join(RAIZ, 'posts');
-const SITE = 'https://geekonpage.vercel.app';
+// endereço público do site (feed RSS e pré-visualização nas redes). No Cloudflare pode vir de SITE_URL.
+const SITE = (process.env.SITE_URL || 'https://geekonverse.pages.dev').replace(/\/$/, '');
 
 // Copiado tal como está (o jogo da Ilha usa store.html, css/, js/ e assests/)
 const COPIAR = ['assets', 'assests', 'css', 'js', 'store.html', 'privacypolicy.html', 'licencas'];
@@ -59,12 +60,16 @@ const filtros = projetos.length > 1 ? `<fieldset class="filtros" data-filtros hi
 let pagina = fs.readFileSync(path.join(RAIZ, 'pagina.html'), 'utf8');
 for (const marca of ['<!-- DEVLOG -->', '<!-- FILTROS -->']) if (!pagina.includes(marca)) throw new Error(`pagina.html: falta a marca ${marca}`);
 pagina = pagina.replace('<!-- DEVLOG -->', entradas).replace('<!-- FILTROS -->', filtros);
+pagina = pagina.replaceAll('{{SITE}}', SITE);
 
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 for (const item of COPIAR) if (fs.existsSync(path.join(RAIZ, item))) fs.cpSync(path.join(RAIZ, item), path.join(DIST, item), { recursive: true });
 if (fs.existsSync(path.join(POSTS, 'img'))) fs.cpSync(path.join(POSTS, 'img'), path.join(DIST, 'posts', 'img'), { recursive: true });
 fs.writeFileSync(path.join(DIST, 'index.html'), pagina);
+
+// Cloudflare Pages: endereços antigos do site da Vercel continuam a funcionar
+fs.writeFileSync(path.join(DIST, '_redirects'), ['/about.html / 301', '/contact.html /#contacto 301', ''].join('\n'));
 
 
 fs.writeFileSync(path.join(DIST, 'feed.xml'), `<?xml version="1.0" encoding="UTF-8"?>
