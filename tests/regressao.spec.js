@@ -86,7 +86,7 @@ test.describe('Projetos', () => {
   test('estão os quatro projetos e a Ilha liga para o jogo antigo', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.painel:not(.painel--intro)')).toHaveCount(4);
-    for (const nome of ['Grafite City', 'Ilha Geekonverse', 'Assistente virtual', 'Sites com movimento']) {
+    for (const nome of ['Grafite City', 'Ilha Geekonverse', 'Faísca', 'Sites com movimento']) {
       await expect(page.locator('.info h3', { hasText: nome })).toHaveCount(1);
     }
     const ilha = page.locator('.painel--ilha');
@@ -111,6 +111,13 @@ test.describe('Devlog', () => {
     await page.waitForTimeout(500);
     expect(await page.evaluate(id => document.getElementById(id)?.open, alvo)).toBe(true);
     expect(erros).toEqual([]);
+  });
+
+  test('todos os links para o devlog apontam para entradas que existem', async ({ page }) => {
+    await page.goto('/');
+    const alvos = await page.$$eval('a[href^="#devlog/"]', as => as.map(a => a.getAttribute('href').replace('#devlog/', 'log-')));
+    expect(alvos.length).toBeGreaterThan(0);
+    for (const id of alvos) expect(await page.locator('#' + id).count(), id).toBe(1);
   });
 
   test('cada entrada abre pelo seu endereço (#devlog/nome)', async ({ page }) => {

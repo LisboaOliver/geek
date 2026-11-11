@@ -1,7 +1,7 @@
 # Geekonverse
 
 Canal de um desenvolvedor de jogos: uma só página com os projetos (Grafite City, Ilha Geekonverse,
-assistente virtual, sites), o devlog, os canais e o contacto. A Ilha joga-se por cima da página.
+Faísca, sites), o devlog, os canais e o contacto. A Ilha joga-se por cima da página.
 Publicado no Cloudflare Pages: https://geekonverse.pages.dev (ligado ao GitHub: cada envio publica sozinho).
 
 ## Publicar uma entrada no devlog
@@ -60,10 +60,6 @@ licencas/            licenças das fontes (OFL), GSAP e Lenis (MIT)
 A Ilha Geekonverse fica como estava: `store.html` com os ficheiros em `css/`, `js/` e `assests/`.
 A página principal só liga para ela. O jogo vai ter um site próprio; até lá, não mexer nestes ficheiros
 (o teste de regressão confirma que continuam iguais).
-
-## Por preencher
-
-- Assistente virtual: nome, o que faz e com que tecnologia (`pagina.html`, procurar `data-a-preencher`).
 
 ## Cloudflare Pages (configuração do projeto)
 
