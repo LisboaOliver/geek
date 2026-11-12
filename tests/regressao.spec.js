@@ -19,6 +19,8 @@ const slug = f => f.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '')
 function vigiar(page) {
   const erros = [];
   page.on('pageerror', e => erros.push('JS: ' + e.message));
+  // bloqueios da política de segurança (Content-Security-Policy): algo que o _headers não autoriza
+  page.on('console', m => { if (/Content Security Policy/i.test(m.text())) erros.push('CSP: ' + m.text().slice(0, 200)); });
   page.on('response', r => { if (r.url().startsWith('http://localhost') && r.status() >= 400) erros.push(`${r.status()}: ${r.url()}`); });
   return erros;
 }

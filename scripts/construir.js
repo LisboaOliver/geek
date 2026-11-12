@@ -69,6 +69,7 @@ if (fs.existsSync(path.join(POSTS, 'img'))) fs.cpSync(path.join(POSTS, 'img'), p
 fs.writeFileSync(path.join(DIST, 'index.html'), pagina);
 
 // Cloudflare Pages: endereços antigos do site da Vercel continuam a funcionar
+fs.copyFileSync(path.join(RAIZ, '_headers'), path.join(DIST, '_headers')); // cabeçalhos de segurança
 fs.writeFileSync(path.join(DIST, '_redirects'), ['/about.html / 301', '/contact.html /#contacto 301', ''].join('\n'));
 
 

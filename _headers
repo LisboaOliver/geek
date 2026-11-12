@@ -1,0 +1,30 @@
+# Cabeçalhos de segurança do Geekonverse (o Cloudflare Pages lê este ficheiro; o build copia-o para dist/).
+
+# Todas as páginas e ficheiros
+/*
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()
+
+# Página principal. Content-Security-Policy: só ficheiros do próprio site, mais o envio
+# do formulário (Web3Forms) e o leitor da Twitch, que abre quando se carrega no botão.
+/
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.web3forms.com; media-src 'self'; frame-src https://player.twitch.tv; object-src 'none'; base-uri 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; upgrade-insecure-requests
+/index.html
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.web3forms.com; media-src 'self'; frame-src https://player.twitch.tv; object-src 'none'; base-uri 'self'; form-action 'self' https://api.web3forms.com; frame-ancestors 'none'; upgrade-insecure-requests
+
+# Política de privacidade do jogo: usa as letras do Google Fonts.
+# (o Cloudflare serve-a também sem .html)
+/privacypolicy
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+/privacypolicy.html
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+
+# A loja da Ilha (store.html) fica como estava: usa React, Babel e Supabase de fora
+# e vai mudar-se para um site próprio. Leva só os cabeçalhos de /*, sem Content-Security-Policy.
